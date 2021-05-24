@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="col-12">
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item">
+                            <span class="colors-white">Доступен</span>
+                        </li>
+                        <li class="breadcrumb-item active colors-red">
+                            <span class="colors-red">Не доступен</span>
+                        </li>
+                        <li class="breadcrumb-item active colors-yellow">
+                            <span class="colors-yellow">Не определен</span>
+                        </li>
+                    </ol>
+                </div>
+                <divs class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item">
+                            <span class="colors-white">Количество групп</span>
+                            <span class="colors-white">{{group|length}}</span>
+                        </li>
+                        <li class="breadcrumb-item ">
+                            <span class="colors-white">Устройства</span>
+                            <span class="colors-white">{{sw|length}}</span>
+                        </li>
+                    </ol>
+                </divs>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-3">
+            <div class="card card-primary">
+                <div class="card-header">
+                    <h3 class="card-title">Group Add</h3>
+                </div>
+                <div class="card-body">
+                    <form action="/sw/add/group/save" enctype="multipart/form-data" method="post" role="form">
+                        <div class="form-group">
+                            <label for="exampleInputBorder"><code>Group</code></label>
+                            <input name="csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+                            <input type="text" class="form-control form-control-border"
+                                   name="name" id="name" placeholder="Group Name">
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary btn-md btn-block">Add Group</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div class="card card-primary">
+                <form action="/sw/add/switch/save" enctype="multipart/form-data" method="post" role="form">
+                    <div class="card-header">
+                        <h3 class="card-title">Device Add</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="exampleInputBorder"><code>IP</code></label>
+                            <input name="csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+                            <input type="text" class="form-control form-control-border" name="ip" id="ip"
+                                   placeholder="10.1.1.11">
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputBorder"><code>CommunityRO</code></label>
+                            <input type="text" class="form-control form-control-border" name="community_ro"
+                                   id="CommunityRO"
+                                   placeholder="public">
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputBorder"><code>CommunityRW</code></label>
+                            <input type="text" class="form-control form-control-border" name="community_rw"
+                                   id="CommunityRW"
+                                   placeholder="private">
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputBorder"><code>Description</code></label>
+                            <input type="text" class="form-control form-control-border border-width-2"
+                                   name="description"
+                                   id="description"
+                                   placeholder="location">
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputBorder"><code>Group</code></label>
+                            <select class="custom-select form-control-border" name="group_id">
+                                <option disabled selected>...</option>
+                                {% for g in group %}
+                                <option value="{{g.id}}">{{g.name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary btn-md btn-block">Add Device</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="card card-primary">
+                <div class="card-header">
+                    <h3 class="card-title">Group Add</h3>
+                </div>
+                <div class="card-body" style="overflow-y: auto; max-height: 500px;">
+                    <table class="table table-head-fixed text-nowrap">
+                        <thead>
+                        <tr>
+                            <th>Ip/Description</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {%for g in group %}
+                        <tr>
+                            <td>
+                                <a class="btn  btn-sm" href="/sw/add/group/delete={{g.id}}">
+                                    <i class="far fa-times-circle"></i>
+                                </a>
+                                {{g.name}}
+                                {% for s in sw %}
+                                {% if g.id == s.group_id %}
+                                <ul>
+                                    <li>
+                                        <a class="btn  btn-xs" href="/sw/add/switch/delete={{s.id}}">
+                                            <i class="far fa-times-circle"></i>
+                                        </a>
+                                        <span>
+                                    {{ s.ip }}
+                                </span>
+                                        <span>
+                                    {% if s.description != None %}
+                                   {{s.description}}
+                                   {% endif %}
+                               </span>
+                                    </li>
+                                </ul>
+                                {% endif %}
+                                {% endfor %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

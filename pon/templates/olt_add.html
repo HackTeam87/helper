@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="col-12">
+    <div class="content-header">
+        <div class="container-fluid">
+
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-5">
+            <div class="card card-primary">
+                <form action="/pon/add/save" enctype="multipart/form-data" method="post" role="form">
+                    <div class="card-header">
+                        <h3 class="card-title">Device Add</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="exampleInputBorder"><code>Module</code></label>
+                            <select class="custom-select form-control-border" name="modules_id">
+                                <option disabled selected>...</option>
+                                {% for m in modules %}
+                                <option value="{{m.id}}">{{m.module_name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label for="exampleInputBorder"><code>IP</code></label>
+                                    <input name="csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+                                    <input type="text" class="form-control form-control-border" name="ip" id="ip"
+                                           placeholder="10.1.1.11">
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label for="exampleInputBorder"><code>Model</code></label>
+                                    <input type="text" class="form-control form-control-border" name="model"
+                                           id="Model"
+                                           placeholder="Model">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label for="exampleInputBorder"><code>CommunityRO</code></label>
+                                    <input type="text" class="form-control form-control-border" name="community_ro"
+                                           id="CommunityRO"
+                                           placeholder="public">
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label for="exampleInputBorder"><code>CommunityRW</code></label>
+                                    <input type="text" class="form-control form-control-border" name="community_rw"
+                                           id="CommunityRW"
+                                           placeholder="private">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputBorder"><code>Description</code></label>
+                            <input type="text" class="form-control form-control-border border-width-2"
+                                   name="desc" placeholder="desc">
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputBorder"><code>Img</code></label>
+                            <input type="file" class="form-control form-control-border border-width-2" name="img">
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary btn-md btn-block">Add Device</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="col-sm-7">
+            <div class="card card-primary">
+                <div class="card-header">
+                    <h3 class="card-title">Olt</h3>
+                </div>
+                <div class="card-body" style="overflow-y: auto; max-height: 500px;">
+                    <table class="table table-head-fixed text-nowrap">
+                        <thead>
+                        <tr>
+                            <th>Ip/Description</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {%for d in device %}
+                        <tr>
+                            <td>
+                                <ul>
+                                    <li>
+                                        <a class="btn  btn-xs" href="/pon/add/delete={{d.id}}">
+                                            <i class="far fa-times-circle"></i>
+                                        </a>
+                                        <span style="color: steelblue;font-weight: lighter;">
+                                            <img class="brand-image"
+                                             src="{{ url_for('static', filename='img/olt/')}}{{d.img}}"
+                                             alt="{{d.img}}" width="20%">
+                                             {{ d.ip }}
+                                            | {{d.model}}
+                                            {% if d.desc != None %}
+                                   | {{d.desc}}
+                                            {% endif %}
+                                        </span>
+
+                                    </li>
+                                </ul>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

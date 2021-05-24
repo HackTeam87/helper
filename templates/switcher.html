@@ -1,0 +1,370 @@
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+    <style>
+        .v-progress-circular {
+            margin: 1rem;
+        }
+    </style>
+    <title>Switcher</title>
+</head>
+<body>
+
+{% raw %}
+
+<div id="app">
+    <v-app>
+        <v-main>
+            <v-container>
+
+                <div class="preloader" v-if="loading">
+                    <div class="text-center">
+                        <v-overlay v-if="loader">
+                            <v-progress-circular
+                                    :rotate="90"
+                                    :size="120"
+                                    :width="15"
+                                    :value="value"
+                                    color="white"
+                            >
+                                {{ value }}
+                            </v-progress-circular>
+                        </v-overlay>
+                    </div>
+                </div>
+
+                <v-flex sm12 style="overflow: auto">
+
+                    <v-form v-on:submit.prevent="GetInfo2()">
+                        <v-card>
+                            <v-card-title>
+
+                                <v-spacer></v-spacer>
+                                <h2 style="color:#0275d8">Sw</h2>
+                                <v-spacer></v-spacer>
+                                <v-text-field
+                                        v-model="search2"
+                                        label="Search"
+                                        placeholder="10.1.1.11"
+                                        hide-details
+                                >
+                                </v-text-field>
+
+                                <v-btn @click="GetInfo2()">show</v-btn>
+                            </v-card-title>
+                        </v-card>
+                    </v-form>
+                    <v-card>
+                        <v-container class="grey lighten-5">
+                            <v-row no-gutters>
+                                <v-col cols="12" sm="3" v-for="b in base_info" :key="b.model">
+                                    <v-card class="pa-2" outlined tile>
+                                        <h5>{{b.model}}</h5>
+                                        <h5>{{b.sw_d}}</h5>
+                                        <h5>{{b.sw_u}}</h5>
+                                        <h5>{{b.count_p}}</h5>
+                                    </v-card>
+                                </v-col>
+                            </v-row>
+                        </v-container>
+                    </v-card>
+
+                    <v-data-table
+                            primary
+                            mobile-breakpoint="0"
+                            :headers="_headers"
+                            :items="base_list"
+                            item-key="id"
+                            sort-by="port"
+                            :footer-props="footerProps"
+                            class="elevation-1"
+                    >
+
+                        <template v-slot:body="{ items }">
+
+                            <tbody>
+                            <tr v-for="(item,index) in items" :key="index">
+                                <td class="text-left">
+                                    <v-tooltip center>
+                                        <template v-slot:activator="{ on, attrs }">
+                                            <v-btn class="ma-2"
+                                                   v-bind="attrs"
+                                                   v-on="on">
+                                                <v-icon center
+                                                        :color="getColor(item.status)">mdi-ethernet mdi-36px
+                                                </v-icon>
+                                                {{ item.port }}
+                                            </v-btn>
+                                        </template>
+                                        <span v-html="operStatus(item.speed)"></span>
+                                    </v-tooltip>
+
+                                </td>
+
+                                <td class="text-left">
+                                    <span v-html="operStatus(item.speed)"></span>
+                                </td>
+                                <td class="text-left">{{ item.desc}}</td>
+                                <td class="text-left">
+                                    <div style='overflow-y: auto; max-height: 80px;'>
+                                        <span v-for="(m, index) in item.mac_address" :key="index">{{ m }}<br></span>
+                                    </div>
+                                </td>
+                                <td class="text-left">
+                                    <div style='overflow-y: auto; max-height: 100px;'>
+                                        <span v-for="(v, index) in item.vlan" :key="index">{{ v }}<br></span>
+                                    </div>
+                                </td>
+                                <td class="text-left">
+                                    <span v-html="getCounters(item)"
+                                          v-bind:style="{ color: colorBySizes(item.in_c, item.out_c),
+                                          'font-weight': boldBySizes(item.in_c, item.out) }"></span>
+                                </td>
+                                <td class="text-left">
+
+                                    <div>
+                                        <a href="javascript:void(0);" @click="diagPort(item.port)"
+                                           title="Click for reload info" style="text-decoration: none;">
+                                            <div>
+                                                <span>{{pair_len[0]}} {{pair_len[1]}}</span>
+                                                <br v-if="pair_len.length !== 0">
+                                                <span>{{pair_len[2]}} {{pair_len[3]}}</span>
+                                                <br v-if="pair_len.length !== 0">
+                                                <span>{{pair_len[4]}} {{pair_len[5]}}</span>
+                                                <br v-if="pair_len.length !== 0">
+                                                <span>{{pair_len[6]}} {{pair_len[7]}}</span>
+                                            </div>
+                                            <span v-if="pair_len.length === 0">Опросить</span>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+
+                        </template>
+
+
+                    </v-data-table>
+                    <v-btn v-scroll="onScroll" v-show="fab" fab dark fixed bottom left color="green"
+                           @click="BackToHome()">
+                        <v-icon>mdi-arrow-collapse-left</v-icon>
+                    </v-btn>
+
+                    <v-btn v-scroll="onScroll" v-show="fab" fab
+                           dark fixed bottom right color="green"
+                           @click="toTop">
+                        <v-icon>mdi-arrow-up</v-icon>
+                    </v-btn>
+                </v-flex>
+
+            </v-container>
+
+        </v-main>
+    </v-app>
+</div>
+
+{% endraw %}
+<script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+<script src="https://unpkg.com/vue-router@3.5.1/dist/vue-router.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+<script>
+
+    const router = new VueRouter({
+        mode: 'history',
+        routes: [
+            // { path: '/dashboard', component: dashboard }
+        ]
+    })
+    new Vue({
+        router,
+        el: '#app',
+        vuetify: new Vuetify(),
+        data() {
+            return {
+                loading: false,
+                interval: {},
+                value: 0,
+                loader: true,
+                error: '',
+                fab: false,
+                search: '',
+                search2: '',
+                footerProps: {'items-per-page-options': [28, 48, -1]},
+                headers: [
+                    {text: 'port', width: "5%", show: true, value: ''},
+                    {text: 'link', width: "10%", show: true, value: ''},
+                    {text: 'desc', width: "3%", show: true, value: ''},
+                    {text: 'mac_address', width: "17%", show: true, value: ''},
+                    {text: 'vlan_id', width: "8%", show: true, value: ''},
+                    {text: 'In/Out', width: "20%", show: true, value: ''},
+                    {text: 'cable', width: "20%", show: true, value: ''},
+                ],
+                base_list: [],
+                base_info: [],
+                pair_len: [],
+            }
+        },
+        created() {
+            this.search = this.getIpFromQuery()
+            if (this.search !== "") {
+                this.setDeviceIp(this.search);
+            }
+        },
+        methods: {
+            async GetInfo() {
+                this.loading = true
+                if (this.search !== '') {
+                    let one = 'https://switcher.golden.net.ua/api/sw/info?ip=' + this.search
+                    let two = 'https://switcher.golden.net.ua/api/sw/base?ip=' + this.search
+
+
+                    const requestOne = axios.get(one);
+                    const requestTwo = axios.get(two);
+                    await axios.all([requestOne, requestTwo]).then(axios.spread((...responses) => {
+                        const responseOne = responses[0]
+                        const responseTwo = responses[1]
+                        this.base_info = responseOne.data.data
+                        this.base_list = responseTwo.data.data
+                        console.log(this.search)
+                    }))
+                }
+
+                this.loading = false
+
+            },
+            async GetInfo2() {
+                this.loading = true
+                if (this.search2 !== '') {
+                    let one = 'https://switcher.golden.net.ua/api/sw/info?ip=' + this.search2
+                    let two = 'https://switcher.golden.net.ua/api/sw/base?ip=' + this.search2
+
+                    const requestOne = axios.get(one);
+                    const requestTwo = axios.get(two);
+                    await axios.all([requestOne, requestTwo]).then(axios.spread((...responses) => {
+                        const responseOne = responses[0]
+                        const responseTwo = responses[1]
+                        this.base_info = responseOne.data.data
+                        this.base_list = responseTwo.data.data
+                    }))
+                }
+
+                this.loading = false
+
+            },
+            getIpFromQuery() {
+                console.log(this.$route);
+                if (typeof this.$route.query.ip !== 'undefined') {
+                    return this.$route.query.ip;
+                }
+                return "";
+            },
+            setDeviceIp: function (ip) {
+                console.log("New deviceIP setted: " + ip);
+                this.search = ip;
+            },
+            getColor(status) {
+                if (status === '1' || status === 1) return 'green'
+                else return 'error'
+            },
+            operStatus: function (d) {
+                if (d === '100000000') return '<span style="color: darkgreen">100-Full</span>';
+                if (d === '1000000000') return '<span style="color: darkgreen">1G-Full</span>';
+                if (d === '4294967295') return '<span style="color: darkgreen">10G-Full</span>';
+                if (d === '0') return '<span style="color: darkgray; font-weight: bold">Down</span>';
+
+                return d;
+            },
+            getCounters: function (el) {
+                return this.convertSize(el.in_c) + "/" + this.convertSize(el.out_c);
+            },
+            convertSize: function (el) {
+                let out = '';
+                if (el < 1024) out = el + "B";
+                if (el === 0) out = el;
+                if (el > 1024) out = (el / 1024).toFixed(2) + "K";
+                if (el > 1048576) out = (el / 1048576).toFixed(2) + "M";
+                if (el > 1073741824) out = (el / 1073741824).toFixed(2) + "G";
+                if (el > 1099511627776) out = (el / 1099511627776).toFixed(2) + "T";
+                return out;
+            },
+            colorBySizes: function (in_o, out_o) {
+                let color = 'gray';
+                if ((in_o === 0 || out_o === 0) && ((in_o > out_o + 1000) || (out_o > in_o + 1000))) {
+                    color = 'error';
+                } else if (in_o === '0' && out_o === '0') {
+                    color = 'gray';
+                } else if (in_o !== '0' && out_o !== '0') {
+                    color = 'green';
+                }
+                return color
+            },
+            boldBySizes: function (in_o, out_o) {
+
+                let weight = '400';
+                if ((in_o === 0 || out_o === 0) && ((in_o > out_o + 1000) || (out_o > in_o + 1000))) {
+                    weight = '800';
+                } else if (in_o === '0' && out_o === '0') {
+                    weight = '400';
+                } else if (in_o !== '0' && out_o !== '0') {
+                    weight = '700';
+                }
+
+                return weight
+            },
+            async diagPort(portNum) {
+                this.loading = true
+                await axios.get('https://switcher.golden.net.ua//api/sw/port/len?ip=' + this.search + '&port=' + portNum)
+                    .then((response) => {
+                        this.pair_len = response.data.data;
+                    });
+                this.loading = false
+                // return "<span>" + this.pair_len[0] + "-" + "M" + "<br>" + this.pair_len[0] + "-" + "M" + "</span>";
+            },
+            onScroll(e) {
+                if (typeof window === 'undefined') return
+                const top = window.pageYOffset || e.target.scrollTop || 0
+                this.fab = top > 20
+            },
+            toTop() {
+                this.$vuetify.goTo(0)
+            },
+            BackToHome() {
+                window.open('/', "_self");
+            },
+        },
+        mounted() {
+            this.interval = setInterval(() => {
+                if (this.value === 100 && this.loading === false) {
+                    return (this.loader = false)
+                }
+                this.value += 1
+            }, 600)
+        },
+        watch: {
+            search: function () {
+                let route = this.$route.path;
+                if (route === '/sw') {
+                    route = '/sw';
+                    this.GetInfo()
+                }
+
+                console.log(route)
+            },
+        },
+        computed: {
+            _headers() {
+                return this.headers.filter(x => x.show)
+            }
+        }
+    })
+
+</script>
+</body>
+</html>

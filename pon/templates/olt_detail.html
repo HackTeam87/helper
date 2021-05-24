@@ -1,0 +1,332 @@
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='vue/css/vuetify.min.css') }}">
+    <!--    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">-->
+    <style>
+        .v-progress-circular {
+            margin: 1rem;
+        }
+    </style>
+    <title>Pon</title>
+</head>
+<body>
+
+{% raw %}
+
+<div id="app">
+    <v-app>
+        <v-main>
+            <v-container>
+
+                <div class="preloader" v-if="loading">
+                    <div class="text-center">
+                        <v-overlay v-if="loader">
+                            <v-progress-circular
+                                    :rotate="90"
+                                    :size="120"
+                                    :width="15"
+                                    :value="value"
+                                    color="white"
+                            >
+                                {{ value }}
+                            </v-progress-circular>
+                        </v-overlay>
+                    </div>
+                </div>
+
+                <v-flex sm12 style="overflow: auto">
+
+                    <v-card>
+                        <v-container class="grey lighten-5">
+
+                            <v-row no-gutters>
+
+                                <v-col cols="12" sm="3" v-for="(a, index) in base_info" :key="index">
+                                    <v-card class="pa-2" outlined tile>
+                                        <h5>{{a.desc}}</h5>
+                                        <h5>{{a.uptime}}</h5>
+                                        <h5>{{a.cpu}}</h5>
+                                        <h5>{{a.temp}}</h5>
+                                    </v-card>
+                                </v-col>
+                            </v-row>
+                        </v-container>
+                    </v-card>
+                    <v-card>
+                        <v-container class="grey lighten-5">
+
+                            <v-row no-gutters>
+
+                                <v-col cols="12" sm="3" v-for="(c, index) in port_onu_count" :key="index">
+                                    <v-card class="pa-2" outlined tile disabled>
+                                        <v-slider
+                                                v-model="c.onu_count"
+                                                :label="c.port_id"
+                                                :thumb-color="PortOnuCount(c.onu_count)"
+                                                :max="c.port_holding"
+                                                thumb-label="always"
+                                        ></v-slider>
+                                    </v-card>
+                                </v-col>
+                            </v-row>
+                            <v-row align="center" justify="space-around">
+
+                                <v-btn dark class="ma-2" outlined color="green" @click="GetTree()">tree update</v-btn>
+
+                            </v-row>
+                        </v-container>
+                    </v-card>
+
+
+                    <v-card v-if="tree">
+                        <v-card-title>
+                            <v-spacer></v-spacer>
+                            <v-text-field
+                                    v-model="search"
+                                    append-icon="mdi-magnify"
+                                    label="Filter (onu,mac,signal,len)"
+                                    single-line
+                                    hide-details
+                            ></v-text-field>
+                        </v-card-title>
+                        <v-data-table
+                                primary
+                                mobile-breakpoint="0"
+                                :headers="headers"
+                                :items="filteredItems"
+                                item-key="port"
+                                sort-by="port"
+                                :footer-props="footerProps"
+                                class="elevation-1"
+                        >
+
+                            <template v-slot:body="{ items }">
+
+                                <tbody>
+                                <tr v-for="(item,index) in items" :key="index">
+                                    <td class="text-left">
+                                        <v-btn class="ma-2">
+                                            <v-icon center
+                                                    :color="getColor(item.onu_status)">mdi-router-wireless mdi-36px
+                                            </v-icon>
+                                            {{ item.port}}
+                                        </v-btn>
+
+                                    </td>
+                                    <td class="text-left" v-html="getSignal(item.onu_signal)"></td>
+                                    <td class="text-left"><span
+                                            v-if="item.onu_lenght !== '0'">{{ item.onu_lenght}} m</span>
+                                    </td>
+                                    <td class="text-left">{{ item.mac}}</td>
+                                    <td>
+                                        <v-btn class="ma-2" @click="showOnuDetail(item.id)">
+                                            <v-icon center>mdi-share</v-icon>
+                                        </v-btn>
+                                    </td>
+                                </tr>
+
+                                </tbody>
+
+                            </template>
+
+
+                        </v-data-table>
+                    </v-card>
+
+                    <v-btn fab dark fixed bottom left color="green"
+                           @click="BackToHome()">
+                        <v-icon>mdi-arrow-collapse-left</v-icon>
+                    </v-btn>
+
+                    <v-btn v-scroll="onScroll" v-show="fab" fab
+                           dark fixed bottom right color="green"
+                           @click="toTop">
+                        <v-icon>mdi-arrow-up</v-icon>
+                    </v-btn>
+                </v-flex>
+
+            </v-container>
+
+        </v-main>
+    </v-app>
+</div>
+
+{% endraw %}
+<!--<script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>-->
+<!--<script src="https://unpkg.com/vue-router@3.5.1/dist/vue-router.js"></script>-->
+<!--<script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>-->
+<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>-->
+<script src="{{ url_for('static', filename='vue/js/vue.js') }}"></script>
+<script src="{{ url_for('static', filename='vue/js/vue-router.js') }}"></script>
+<script src="{{ url_for('static', filename='vue/js/vuetify.js') }}"></script>
+<script src="{{ url_for('static', filename='vue/js/axios.min.js') }}"></script>
+
+
+<script>
+
+    const router = new VueRouter({
+        mode: 'history',
+        routes: [
+            {
+                name: 'OnuDetail',
+                path: '/pon/olt/detail/',
+                props: true
+            },
+            // { path: '/dashboard', component: dashboard }
+        ]
+    })
+    new Vue({
+        router,
+        el: '#app',
+        vuetify: new Vuetify(),
+        data() {
+            return {
+                loading: false,
+                interval: {},
+                value: 0,
+                loader: true,
+                error: '',
+                fab: false,
+                search: '',
+                deviceIp: '',
+                tree: false,
+                footerProps: {'items-per-page-options': [50, 300, -1]},
+                headers: [
+                    {text: 'onu up/down', width: "20%", show: true, value: ''},
+                    {text: 'onu_signal', width: "8%", show: true, value: ''},
+                    {text: 'onu_lenght', width: "8%", show: true, value: ''},
+                    {text: 'mac_onu', width: "25%", show: true, value: ''},
+                    {text: 'info', width: "20%", show: true, value: ''},
+                ],
+                ex3: {label: 'thumb-color', val: 50, color: 'red'},
+                base_info: [],
+                port_onu_count: [],
+                all_info: [],
+            }
+        },
+        created() {
+            this.deviceIp = this.getIpFromQuery()
+            if (this.deviceIp !== "") {
+                this.GetInfo();
+            }
+        },
+        methods: {
+            async GetTree() {
+                this.tree = true
+                this.loading = true
+                if (this.deviceIp !== '') {
+                    let all = 'https://switcher.golden.net.ua/pon/api/olt/all?ip=' + this.deviceIp
+                    const request = axios.get(all);
+                    await axios.all([request]).then(axios.spread((...responses) => {
+                        const responseAll = responses[0]
+                        this.all_info = responseAll.data.data
+                    }))
+                }
+                this.loading = false
+            },
+            async GetInfo() {
+                this.loading = true
+                if (this.deviceIp !== '') {
+                    let one = 'https://switcher.golden.net.ua/pon/api/olt/base?ip=' + this.deviceIp
+                    let two = 'https://switcher.golden.net.ua/pon/api/olt/onu/count?ip=' + this.deviceIp
+                    const requestOne = axios.get(one);
+                    const requestTwo = axios.get(two);
+                    await axios.all([requestOne, requestTwo]).then(axios.spread((...responses) => {
+                        const responseOne = responses[0]
+                        const responseTwo = responses[1]
+                        this.base_info = responseOne.data.data
+                        this.port_onu_count = responseTwo.data.data
+                    }))
+                }
+                this.loading = false
+
+            },
+            getIpFromQuery() {
+                console.log(this.$route);
+                if (typeof this.$route.query.ip !== 'undefined') {
+                    console.log(this.$route.query.ip)
+                    return this.$route.query.ip;
+                }
+                return "";
+            },
+            setDeviceIp: function (ip) {
+                console.log("New deviceIP setted: " + ip);
+                this.deviceIp = ip;
+            },
+            getColor(status) {
+                if (status === '1' || status === 1) return 'green'
+                else return 'error'
+            },
+            PortOnuCount(count) {
+                if (count < '45' || count < 45) return 'green'
+                if (count >= '45' && count <= '55' || count >= 45 && count <= 55) return 'orange'
+                if (count >= '56' || count >= 56) return 'error'
+                else return 'gray'
+            },
+            getSignal(signal) {
+                if (signal !== '' && signal !== isNaN && signal <= '-23') {
+                    return '<span style="color:darkgreen;">' + parseInt(signal) / 10 + ' dbm' + '</span>'
+                }
+
+                if (signal !== '' && signal !== isNaN && signal >= '-23' && signal <= '-24') {
+                    return '<span style="color:orange;">' + parseInt(signal) / 10 + ' dbm' + '</span>'
+                }
+                if (signal !== '' && signal !== isNaN && signal > '-24') {
+                    return '<span style="color:red;">' + parseInt(signal) / 10 + ' dbm' + '</span>'
+                }
+                return 0
+            },
+            onScroll(e) {
+                if (typeof window === 'undefined') return
+                const top = window.pageYOffset || e.target.scrollTop || 0
+                this.fab = top > 20
+            },
+            toTop() {
+                this.$vuetify.goTo(0)
+            },
+            BackToHome() {
+                window.open('/pon/main/', "_self");
+            },
+
+            showOnuDetail(OnuId) {
+                window.open('/pon/onu/detail?ip=' + this.deviceIp + '&OnuId=' + OnuId, "_self");
+            }
+        },
+        mounted() {
+            this.interval = setInterval(() => {
+                if (this.value === 100 && this.loading === false) {
+                    return (this.loader = false)
+                }
+                this.value += 1
+            }, 600)
+        },
+        watch: {
+            search: function () {
+                let route = this.$route.path;
+                if (route === '/olt/detail/') {
+                    route = '/olt/detail/';
+                    this.GetInfo()
+                }
+
+                console.log(route)
+            },
+        },
+        computed: {
+            filteredItems() {
+                return this.all_info.filter((i) => {
+                    return !this.search || (i.port + '||' + i.mac + '||' + i.onu_signal + '||' + i.onu_lenght)
+                        .toUpperCase().indexOf(this.search.toUpperCase()) !== -1
+                })
+            }
+        },
+    })
+
+</script>
+</body>
+</html>

@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="col-12">
+    <div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item">
+                        <span class="colors-white">Доступен</span>
+                    </li>
+                    <li class="breadcrumb-item active colors-red">
+                        <span class="colors-red">Не доступен</span>
+                    </li>
+                    <li class="breadcrumb-item active colors-yellow">
+                        <span class="colors-yellow">Не определен</span>
+                    </li>
+                </ol>
+            </div>
+            <divs class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item">
+                        <span class="colors-white">Количество групп</span>
+                        <span class="colors-white">{{group|length}}</span>
+                    </li>
+                    <li class="breadcrumb-item ">
+                        <span class="colors-white">Устройства</span>
+                        <span class="colors-white">{{sw|length}}</span>
+                    </li>
+                </ol>
+            </divs>
+        </div>
+    </div>
+</div>
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Pinger</h3>
+        </div>
+        {% for g in group %}
+
+
+        <div {% if g.status== 1 %} class="card-body p-0 colors-white"
+             {% elif g.status== 0 %} class="card-body p-0  colors-red"
+             {% else %} class="card-body p-0 colors-yellow" {% endif %}>
+
+            <table class="table table-hover">
+                <tbody>
+
+                <tr data-widget="expandable-table" aria-expanded="false">
+                    <td>
+                        <button type="button" class="btn  p-0">
+                            <i class="expandable-table-caret fas fa-server fa-1x fa-fw"></i>
+                        </button>
+                        {{g.name}}
+                    </td>
+                </tr>
+
+
+                <tr class="expandable-body d-none">
+
+                    <td>
+                        {% for s in sw %}
+                        {% if s.group_id == g.id %}
+                        <div class="p-0"
+                             style="height: 50px; padding-top: 0px; margin-top: 0px; padding-bottom: 0px; margin-bottom: 0px; display: none;">
+                            <table class="table ">
+                                <tbody>
+
+                                <tr data-widget="expandable-table" aria-expanded="false">
+
+                                    <td>
+                                        <a href="https://switcher.golden.net.ua/sw?ip={{s.ip}}"
+                                           {% if s.status== 1 %} class="colors-white"
+                                           {% elif s.status== 0 %} class="colors-red"
+                                           {% else %} class="colors-yellow" {% endif %}
+                                        >
+                                            <i class="expandable-table-caret fa fa-random fa-1x fa-fw"></i>
+                                            <span>{{s.ip}}</span>
+                                            <span>
+                                    {% if s.description != None %}
+                                   {{s.description}}
+                                   {% endif %}
+                                             </span>
+
+                                            <span> обновление :{{s.up}}</span>
+                                        </a>
+                                    </td>
+
+                                </tr>
+
+                                </tbody>
+                            </table>
+                        </div>
+                        {% endif%}
+                        {% endfor%}
+                    </td>
+
+                </tr>
+
+
+                </tbody>
+            </table>
+
+        </div>
+        <!--         <hr>-->
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

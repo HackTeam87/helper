@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="col-12">
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item">
+                            <span class="colors-white">Доступен</span>
+                        </li>
+                        <li class="breadcrumb-item active colors-red">
+                            <span class="colors-red">Не доступен</span>
+                        </li>
+                        <li class="breadcrumb-item active colors-yellow">
+                            <span class="colors-yellow">Не определен</span>
+                        </li>
+                    </ol>
+                </div>
+                <divs class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item">
+                            <span class="colors-white">Количество групп</span>
+                            <span class="colors-white">{{group|length}}</span>
+                        </li>
+                        <li class="breadcrumb-item ">
+                            <span class="colors-white">Устройства</span>
+                            <span class="colors-white">{{sw|length}}</span>
+                        </li>
+                    </ol>
+                </divs>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+
+        <div class="col-sm-6">
+            <div class="card card-primary">
+                <form action="/user/add/save" enctype="multipart/form-data" method="post" role="form">
+                    <div class="card-header">
+                        <h3 class="card-title">User Add</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="exampleInputBorder"><code>Name</code></label>
+                            <input name="csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+                            <input type="text" class="form-control form-control-border" name="last_name" id="last_name"
+                                   placeholder="name">
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputBorder"><code>Email</code></label>
+                            <input type="text" class="form-control form-control-border" name="email"
+                                   id="email"
+                                   placeholder="email">
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputBorder"><code>Password</code></label>
+                            <input type="text" class="form-control form-control-border border-width-2"
+                                   name="password"
+                                   id="password"
+                                   placeholder="password">
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputBorder"><code>Role</code></label>
+                            <select class="custom-select form-control-border" name="roles">
+                                <option disabled selected>...</option>
+                                {% for r in role %}
+                                <option value="{{r.id}}">{{r.id}}{{r.name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary btn-md btn-block">Add User</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="card card-primary">
+                <div class="card-header">
+                    <h3 class="card-title">List Users </h3>
+                </div>
+                <div class="card-body" style="overflow-y: auto; max-height: 500px;">
+                    <table class="table table-head-fixed text-nowrap">
+                        <thead>
+                        <tr>
+                            <th>Role/Users</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>
+                                {% for u in user %}
+                                <ul>
+                                    <li>
+                                        <a class="btn  btn-xs" href="/user/delete={{u.id}}">
+                                            <i class="far fa-times-circle"></i>
+                                        </a>
+                                        <span>
+                                    {{ u.last_name }}
+                                </span>
+                                    </li>
+                                </ul>
+                                {% endfor %}
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

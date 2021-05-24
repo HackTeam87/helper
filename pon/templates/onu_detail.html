@@ -1,0 +1,231 @@
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='vue/css/vuetify.min.css') }}">
+    <style>
+        .v-progress-circular {
+            margin: 1rem;
+        }
+    </style>
+    <title>Onu Detail</title>
+</head>
+<body>
+
+{% raw %}
+
+<div id="app">
+    <v-app>
+        <v-main>
+            <v-container>
+
+                <div class="preloader" v-if="loading">
+                    <div class="text-center">
+                        <v-overlay v-if="loader">
+                            <v-progress-circular
+                                    :rotate="90"
+                                    :size="120"
+                                    :width="15"
+                                    :value="value"
+                                    color="white"
+                            >
+                                {{ value }}
+                            </v-progress-circular>
+                        </v-overlay>
+                    </div>
+                </div>
+
+                <v-flex sm12 style="overflow: auto">
+
+                    <v-card>
+                        <v-container class="grey lighten-5">
+
+                            <v-row no-gutters>
+                                <v-col cols="12" sm="6" >
+                                    <v-card class="pa-2" outlined tile>
+                                        <v-list dense>
+                                            <v-subheader>REPORTS</v-subheader>
+                                            <v-list-item-group  color="primary">
+                                                <v-list-item v-for="(i, index) in onu_info" :key="index">
+                                                    <v-list-item-icon>
+                                                        <v-icon>mdi-checkbox-marked-circle-outline</v-icon>
+                                                    </v-list-item-icon>
+                                                    <v-list-item-content>
+                                                        <v-list-item-title >signal: {{i.signal}}</v-list-item-title>
+                                                        <v-list-item-title >distace: {{i.distance}} m</v-list-item-title>
+                                                        <v-list-item-title >mac-address: {{i.user_mac}}</v-list-item-title>
+                                                        <v-list-item-title >vendor: {{i.vendor}}</v-list-item-title>
+                                                        <v-list-item-title >model: {{i.model}}</v-list-item-title>
+                                                        <v-list-item-title >ver_hard: {{i.ver_hard}}</v-list-item-title>
+                                                        <v-list-item-title >ver_soft: {{i.ver_soft}}</v-list-item-title>
+                                                        <v-list-item-title >volt: {{i.volt}}</v-list-item-title>
+                                                        <v-list-item-title >log: {{i.log}}</v-list-item-title>
+                                                        <v-list-item-title >desc: {{i.desc}}</v-list-item-title>
+                                                    </v-list-item-content>
+                                                </v-list-item>
+                                            </v-list-item-group>
+                                        </v-list>
+
+                                    </v-card>
+                                </v-col>
+                            </v-row>
+                        </v-container>
+                    </v-card>
+
+
+                    <v-btn v-scroll="onScroll" v-show="fab" fab dark fixed bottom left color="green"
+                           @click="BackToHome()">
+                        <v-icon>mdi-arrow-collapse-left</v-icon>
+                    </v-btn>
+
+                    <v-btn v-scroll="onScroll" v-show="fab" fab
+                           dark fixed bottom right color="green"
+                           @click="toTop">
+                        <v-icon>mdi-arrow-up</v-icon>
+                    </v-btn>
+                </v-flex>
+
+            </v-container>
+
+        </v-main>
+    </v-app>
+</div>
+
+{% endraw %}
+<script src="{{ url_for('static', filename='vue/js/vue.js') }}"></script>
+<script src="{{ url_for('static', filename='vue/js/vue-router.js') }}"></script>
+<script src="{{ url_for('static', filename='vue/js/vuetify.js') }}"></script>
+<script src="{{ url_for('static', filename='vue/js/axios.min.js') }}"></script>
+
+
+<script>
+
+    const router = new VueRouter({
+        mode: 'history',
+        routes: [
+
+            // { path: '/dashboard', component: dashboard }
+        ]
+    })
+    new Vue({
+        router,
+        el: '#app',
+        vuetify: new Vuetify(),
+        data() {
+            return {
+                loading: false,
+                interval: {},
+                value: 0,
+                loader: true,
+                error: '',
+                fab: false,
+                deviceIp: '',
+                OnuId: '',
+                onu_info: [],
+            }
+        },
+        created() {
+            this.deviceIp = this.getIpFromQuery()
+            this.OnuId = this.getOnuIdFromQuery()
+            if (this.deviceIp !== "") {
+                this.GetInfo();
+            }
+        },
+        methods: {
+            async GetInfo() {
+                this.loading = true
+                if (this.deviceIp !== '') {
+                    let one = 'https://switcher.golden.net.ua/pon/api/onu/info?ip=' + this.deviceIp + '&OnuId=' + this.OnuId
+                    const requestOne = axios.get(one);
+                    await axios.all([requestOne]).then(axios.spread((...responses) => {
+                        const responseOne = responses[0]
+                        this.onu_info = responseOne.data.data
+                        console.log(this.onu_info)
+                    }))
+                }
+                this.loading = false
+
+            },
+            getIpFromQuery() {
+                console.log(this.$route);
+                if (typeof this.$route.query.ip !== 'undefined') {
+                    console.log(this.$route.query.ip)
+                    return this.$route.query.ip;
+                }
+                return "";
+            },
+            getOnuIdFromQuery() {
+                console.log(this.$route);
+                if (typeof this.$route.query.OnuId !== 'undefined') {
+                    console.log(this.$route.query.OnuId)
+                    return this.$route.query.OnuId;
+                }
+                return "";
+            },
+            setDeviceIp: function (ip) {
+                console.log("New deviceIP setted: " + ip);
+                this.deviceIp = ip;
+            },
+            getColor(status) {
+                if (status === '1' || status === 1) return 'green'
+                else return 'error'
+            },
+            PortOnuCount(count) {
+                if (count < '45' || count < 45) return 'green'
+                if (count >= '45' && count <= '55' || count >= 45 && count <= 55) return 'orange'
+                if (count > '56' || count < 56) return 'error'
+                else return 'gray'
+            },
+            getSignal(signal) {
+                if (signal !== '' && signal <= '-23') {
+                    return '<span style="color:darkgreen;">' + parseInt(signal) / 10 + ' dbm' + '</span>'
+                }
+                if (signal !== '' && signal >= '-23' && signal <= '-24') {
+                    return '<span style="color:orange;">' + parseInt(signal) / 10 + ' dbm' + '</span>'
+                }
+                if (signal !== '' && signal > '-24') {
+                    return '<span style="color:red;">' + parseInt(signal) / 10 + ' dbm' + '</span>'
+                }
+                return '<span style="color:gray;">' + parseInt(signal) / 10 + ' dbm' + '</span>'
+            },
+            onScroll(e) {
+                if (typeof window === 'undefined') return
+                const top = window.pageYOffset || e.target.scrollTop || 0
+                this.fab = top > 20
+            },
+            toTop() {
+                this.$vuetify.goTo(0)
+            },
+            BackToHome() {
+                window.open('/pon/main/', "_self");
+            },
+
+        },
+        mounted() {
+            this.interval = setInterval(() => {
+                if (this.value === 100 && this.loading === false) {
+                    return (this.loader = false)
+                }
+                this.value += 1
+            }, 600)
+        },
+        watch: {
+            search: function () {
+                let route = this.$route.path;
+                if (route === '/onu/detail/') {
+                    route = '/onu/detail/';
+                    this.GetInfo()
+                }
+
+                console.log(route)
+            },
+        },
+    })
+
+</script>
+</body>
+</html>

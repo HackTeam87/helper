@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Перечень влан</h3>
+                </div>
+                <div class="card-body">
+                    <div id="example2_wrapper" class="dataTables_wrapper dt-bootstrap4 table-responsive">
+
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <table id="example2" class="table  table-bordered table-hover dataTable dtr-inline"
+                                       role="grid" aria-describedby="example2_info">
+                                    <thead>
+                                    <tr role="row">
+                                        <th>ID
+                                        </th>
+                                        <th>
+                                            vlan Id
+                                        </th>
+                                        <th>
+                                            type
+                                        </th>
+                                        <th>
+                                            name
+                                        </th>
+
+                                        <th>
+                                            startIP
+                                        </th>
+                                        <th>
+                                            stopIP
+                                        </th>
+                                        <th>
+                                            gateway
+                                        </th>
+                                        <th>
+                                            mask
+                                        </th>
+                                        <th>
+                                            desc
+                                        </th>
+                                        <th style="color:red;">
+                                            delete
+                                        </th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for v in vlans %}
+                                    <tr class="odd">
+
+                                        <td>{{v.id}}</td>
+                                        <td>{{v.vlan_id}}</td>
+                                        <td>{{v.vlan_type}}</td>
+                                        <td>{{v.vlan_name}}</td>
+                                        <td>{{v.start_ip}}</td>
+                                        <td>{{v.stop_ip}}</td>
+                                        <td>{{v.gateway}}</td>
+                                        <td>{{v.mask}}</td>
+                                        <td>{{v.desc}}</td>
+                                        <td>
+                                            <a class="btn  btn-sm" href="/vlan/vlan/delete={{v.id}}">
+                                                <i class="far fa-times-circle"></i>
+                                            </a>
+                                        </td>
+
+                                    </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <form action="/vlan/vlan/save" enctype="multipart/form-data" method="post" role="form">
+                    <div class="card-body">
+                        <div class="dataTables_wrapper dt-bootstrap4 table-responsive">
+
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <table id="" class="table  table-bordered table-hover dataTable dtr-inline"
+                                           role="grid" aria-describedby="example2_info">
+                                        <thead>
+                                        <tr role="row">
+                                            <th>
+                                                <input name="csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+                                                <input type="text" name="vlan_id" placeholder="vlan Id">
+                                            </th>
+                                            <th>
+                                                <select class="custom-select form-control-border" name="vlan_type">
+                                                    <option disabled selected>vlan_type</option>
+
+                                                    <option value="NAT">NAT</option>
+                                                    <option value="EXT">EXT</option>
+                                                    <option value="FAKE">FAKE</option>
+                                                    <option value="TRANSPORT">TRANSPORT</option>
+                                                    <option value="BGP">BGP</option>
+                                                    <option value="OSPF">OSPF</option>
+
+                                                </select>
+                                            </th>
+                                            <th>
+                                                <input type="text" name="vlan_name" placeholder="name">
+                                            </th>
+
+                                            <th>
+                                                <input type="text" name="start_ip" placeholder="startIP">
+                                            </th>
+                                            <th>
+                                                <input type="text" name="stop_ip" placeholder="stopIP">
+                                            </th>
+                                            <th>
+                                                <input type="text" name="gateway" placeholder="gateway">
+                                            </th>
+                                            <th>
+                                                <input type="text" name="mask" placeholder="mask">
+                                            </th>
+                                            <th>
+                                                <input type="text" name="desc" placeholder="desc">
+                                            </th>
+                                        </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <button type="submit" class="btn btn-primary btn-md btn-block">Add Vlan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

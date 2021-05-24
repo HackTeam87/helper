@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+{% for o in olt %}
+<div class="col-12 col-sm-3 col-md-3" style="margin-top:30px;">
+    <span>{{o.desc}}</span>
+    <a href="/pon/olt/detail?ip={{o.ip}}">
+        <div class="info-box">
+
+            <div class="info-box-content">
+                <h6>{{o.model}}</h6>
+                <h6>{{o.ip}}</h6>
+                <img src="{{ url_for('static', filename='img/olt/')}}{{o.img}}" width="100%" alt="{{o.img}}">
+            </div>
+        </div>
+    </a>
+
+    <span class="elevation-1">
+                 <i class="fas fa-cog"></i>
+            {{o.uptime}}
+             </span>
+</div>
+<div class="clearfix hidden-md-up"></div>
+{% endfor %}
+
+
+{% endblock %}
