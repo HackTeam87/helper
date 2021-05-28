@@ -39,36 +39,255 @@
                     </div>
                 </div>
 
+
+                <v-row class="mb-6" no-gutters>
+                    <v-alert
+                            dark
+                            v-model="alert.value"
+                            border="left"
+                            elevation="2"
+                            colored-border
+                            icon="mdi-twitter"
+                            transition="slide-x-transition"
+                            style="width: 60%;position: absolute;z-index: 999;text-align: center;"
+                            :color="alert.color"
+                    >
+                        {{alert.message}}
+                    </v-alert>
+
+                    <v-col cols12 sm12>
+
+                        <v-card class="pa-2" outlined tile hover data-aos="zoom-in" data-aos-easing="ease">
+
+
+                            <v-row align="center" justify="space-between">
+
+
+                                <v-dialog
+                                        transition="dialog-top-transition"
+                                        max-width="600"
+                                >
+                                    <template v-slot:activator="{ on, attrs }">
+                                        <v-btn color="error" v-bind="attrs" v-on="on" disabled>
+                                            <v-icon>
+                                                mdi-autorenew
+                                            </v-icon>
+                                            Reset
+                                        </v-btn>
+                                    </template>
+                                    <template v-slot:default="dialog">
+                                        <v-card>
+                                            <v-toolbar color="error" dark>
+                                                do you really want to reset onu?
+                                            </v-toolbar>
+                                            <v-card-actions class="justify-end">
+                                                <v-btn text
+                                                       @click="ResetOnu() , dialog.value = false"
+                                                >
+                                                    Reset
+                                                </v-btn>
+                                                <v-spacer></v-spacer>
+                                                <v-btn
+                                                        text
+                                                        @click="dialog.value = false"
+                                                >Close
+                                                </v-btn>
+                                            </v-card-actions>
+                                        </v-card>
+                                    </template>
+                                </v-dialog>
+
+                                <v-dialog
+                                        transition="dialog-top-transition"
+                                        max-width="600"
+                                >
+                                    <template v-slot:activator="{ on, attrs }">
+                                        <v-btn color="primary" v-bind="attrs" v-on="on">
+                                            <v-icon>
+                                                mdi-reload
+                                            </v-icon>
+                                            reboot
+                                        </v-btn>
+                                    </template>
+                                    <template v-slot:default="dialog">
+                                        <v-card>
+                                            <v-toolbar color="primary" dark>
+                                                do you really want to reboot onu?
+                                            </v-toolbar>
+                                            <v-card-actions class="justify-end">
+                                                <v-btn text
+                                                       @click="RebootOnu() , dialog.value = false"
+                                                >
+                                                    Reboot
+                                                </v-btn>
+                                                <v-spacer></v-spacer>
+                                                <v-btn
+                                                        text
+                                                        @click="dialog.value = false"
+                                                >Close
+                                                </v-btn>
+                                            </v-card-actions>
+                                        </v-card>
+                                    </template>
+                                </v-dialog>
+
+                                <v-dialog
+                                        transition="dialog-top-transition"
+                                        max-width="600"
+                                >
+                                    <template v-slot:activator="{ on, attrs }">
+                                        <v-btn color="error" v-bind="attrs" v-on="on" >
+                                            <v-icon>
+                                                mdi-delete
+                                            </v-icon>
+                                            delete
+                                        </v-btn>
+                                    </template>
+                                    <template v-slot:default="dialog">
+                                        <v-card>
+                                            <v-toolbar color="error" dark>
+                                                do you really want to delete onu?
+                                            </v-toolbar>
+                                            <v-card-actions class="justify-end">
+                                                <v-btn text
+                                                       @click="DeleteOnu() , dialog.value = false"
+                                                >
+                                                    Delete
+                                                </v-btn>
+                                                <v-spacer></v-spacer>
+                                                <v-btn
+                                                        text
+                                                        @click="dialog.value = false"
+                                                >Close
+                                                </v-btn>
+                                            </v-card-actions>
+                                        </v-card>
+                                    </template>
+                                </v-dialog>
+
+
+                            </v-row>
+                        </v-card>
+                    </v-col>
+                </v-row>
+
+                <v-row class="mb-6" no-gutters>
+                    <v-col cols12 sm12>
+                        <v-card class="pa-2" outlined tile hover data-aos="zoom-in" data-aos-easing="ease">
+                            <v-row align="center" justify="space-between" v-for="(i, index) in onu_info" :key="index">
+                                <v-chip class="ma-2" label color="blue-grey darken-4" text-color="white">
+                                    <span>{{i.port}}</span>
+                                </v-chip>
+                                <v-chip class="ma-2" label color="blue-grey darken-4" text-color="white">
+                                    <span>vendor: {{ i.vendor }}</span>
+                                </v-chip>
+                                <v-chip class="ma-2" label color="blue-grey darken-4" text-color="white">
+                                    <span>model: {{ i.model }}</span>
+                                </v-chip>
+                                <v-chip class="ma-2" label color="blue-grey darken-4" text-color="white">
+                                    <span>ver_soft: {{ i.ver_soft }}</span>
+                                </v-chip>
+                                <v-chip class="ma-2" label color="blue-grey darken-4" text-color="white">
+                                    <span>ver_hard: {{ i.ver_hard }}</span>
+                                </v-chip>
+                            </v-row>
+                        </v-card>
+                    </v-col>
+                </v-row>
+
                 <v-flex sm12 style="overflow: auto">
 
                     <v-card>
                         <v-container class="grey lighten-5">
 
                             <v-row no-gutters>
-                                <v-col cols="12" sm="6" >
+                                <v-col cols="12" sm="12">
                                     <v-card class="pa-2" outlined tile>
-                                        <v-list dense>
-                                            <v-subheader>REPORTS</v-subheader>
-                                            <v-list-item-group  color="primary">
-                                                <v-list-item v-for="(i, index) in onu_info" :key="index">
-                                                    <v-list-item-icon>
-                                                        <v-icon>mdi-checkbox-marked-circle-outline</v-icon>
-                                                    </v-list-item-icon>
-                                                    <v-list-item-content>
-                                                        <v-list-item-title >signal: {{i.signal}}</v-list-item-title>
-                                                        <v-list-item-title >distace: {{i.distance}} m</v-list-item-title>
-                                                        <v-list-item-title >mac-address: {{i.user_mac}}</v-list-item-title>
-                                                        <v-list-item-title >vendor: {{i.vendor}}</v-list-item-title>
-                                                        <v-list-item-title >model: {{i.model}}</v-list-item-title>
-                                                        <v-list-item-title >ver_hard: {{i.ver_hard}}</v-list-item-title>
-                                                        <v-list-item-title >ver_soft: {{i.ver_soft}}</v-list-item-title>
-                                                        <v-list-item-title >volt: {{i.volt}}</v-list-item-title>
-                                                        <v-list-item-title >log: {{i.log}}</v-list-item-title>
-                                                        <v-list-item-title >desc: {{i.desc}}</v-list-item-title>
-                                                    </v-list-item-content>
-                                                </v-list-item>
-                                            </v-list-item-group>
-                                        </v-list>
+
+                                        <v-subheader>REPORTS</v-subheader>
+                                        <v-container>
+                                            <v-row>
+                                                <v-col cols="12" sm="3">
+                                                    <v-data-table
+                                                            mobile-breakpoint="0"
+                                                            :headers="headers1"
+                                                            :items="onu_info"
+                                                            :hide-default-footer="true">
+
+                                                        <template v-slot:body="{ items }">
+
+                                                            <tbody>
+                                                            <tr v-for="(item,index) in items" :key="index">
+                                                                <td class="text-left"
+                                                                    v-for="(sts, index) in item.status_wan"
+                                                                    :key="index">
+
+                                                                    <v-icon :color="getColor(sts)">
+                                                                        mdi-ethernet mdi-36px
+                                                                    </v-icon>
+
+                                                                </td>
+                                                            </tr>
+                                                            </tbody>
+
+                                                        </template>
+
+
+                                                    </v-data-table>
+                                                </v-col>
+                                                <v-col cols="12" sm="3">
+                                                    <v-data-table
+                                                            mobile-breakpoint="0"
+                                                            :headers="headers2"
+                                                            :items="onu_info"
+                                                            :hide-default-footer="true">
+
+                                                        <template v-slot:body="{ items }">
+                                                            <tbody>
+                                                            <tr v-for="(item,index) in items" :key="index">
+                                                                <td class="text-left">
+                                                                         <span v-for="(m, index) in item.user_mac"
+                                                                               :key="index">
+                                                                           eth:({{ m.user_port }}) {{ m.user_mac }}
+                                                                             <br>
+                                                                         </span>
+                                                                </td>
+                                                            </tr>
+                                                            </tbody>
+                                                        </template>
+                                                    </v-data-table>
+                                                </v-col>
+                                                <v-col cols="12" sm="6">
+                                                    <v-list dense>
+                                                        <v-list-item-group color="primary">
+                                                            <v-list-item v-for="(i, index) in onu_info" :key="index">
+                                                                <v-list-item-content>
+                                                                    <v-list-item-title>
+                                                                        rx: <span v-html="getSignal(i.signal_rx)"/>
+                                                                    </v-list-item-title>
+                                                                    <v-list-item-title>
+                                                                        <span>
+                                                                             tx: {{i.signal_tx}}
+                                                                        </span>
+                                                                    </v-list-item-title>
+                                                                    <v-list-item-title>distace: {{i.distance}} m
+                                                                    </v-list-item-title>
+                                                                    <v-list-item-title>volt: {{i.volt}}
+                                                                    </v-list-item-title>
+                                                                     <v-list-item-title>temp: {{i.temp}}
+                                                                    </v-list-item-title>
+                                                                    <v-list-item-title>log: {{i.log}}
+                                                                    </v-list-item-title>
+                                                                    <v-list-item-title>desc: {{i.desc}}
+                                                                    </v-list-item-title>
+                                                                </v-list-item-content>
+                                                            </v-list-item>
+                                                        </v-list-item-group>
+                                                    </v-list>
+                                                </v-col>
+                                            </v-row>
+                                        </v-container>
+
 
                                     </v-card>
                                 </v-col>
@@ -77,7 +296,7 @@
                     </v-card>
 
 
-                    <v-btn v-scroll="onScroll" v-show="fab" fab dark fixed bottom left color="green"
+                    <v-btn fab dark fixed bottom left color="green"
                            @click="BackToHome()">
                         <v-icon>mdi-arrow-collapse-left</v-icon>
                     </v-btn>
@@ -87,7 +306,9 @@
                            @click="toTop">
                         <v-icon>mdi-arrow-up</v-icon>
                     </v-btn>
+
                 </v-flex>
+
 
             </v-container>
 
@@ -101,8 +322,8 @@
 <script src="{{ url_for('static', filename='vue/js/vuetify.js') }}"></script>
 <script src="{{ url_for('static', filename='vue/js/axios.min.js') }}"></script>
 
-
 <script>
+    let reboot_onu = new Audio('../../../static/mp3/twitter_whistle.mp3')
 
     const router = new VueRouter({
         mode: 'history',
@@ -111,12 +332,20 @@
             // { path: '/dashboard', component: dashboard }
         ]
     })
+
     new Vue({
         router,
         el: '#app',
         vuetify: new Vuetify(),
         data() {
             return {
+                alert: {'value': false, 'color': '', 'message': ''},
+                headers1: [
+                    {text: 'Status-Eth', width: '25%'},
+                ],
+                headers2: [
+                    {text: 'Mac-Address', width: '33%'},
+                ],
                 loading: false,
                 interval: {},
                 value: 0,
@@ -136,6 +365,44 @@
             }
         },
         methods: {
+            async RebootOnu() {
+                let reboot = 'https://switcher.golden.net.ua/pon/api/onu/reboot?ip=' + this.deviceIp + '&OnuId=' + this.OnuId
+                const rebootOne = axios.get(reboot);
+                await axios.all([rebootOne]).then(axios.spread((...responses) => {
+                    const rebootOne = responses[0]
+                    if (rebootOne.status === 200) {
+                        reboot_onu.play()
+                        this.alert['value'] = true
+                        this.alert['color'] = 'cyan'
+                        this.alert['message'] = 'onu successfully rebooted'
+                        window.setInterval(() => {
+                            this.alert['value'] = false;
+                            console.log("hide alert after 5 seconds");
+                        }, 5000)
+                    }
+                }))
+
+
+            },
+             async DeleteOnu() {
+                let reboot = 'https://switcher.golden.net.ua/pon/api/onu/delete?ip=' + this.deviceIp + '&OnuId=' + this.OnuId
+                const rebootOne = axios.get(reboot);
+                await axios.all([rebootOne]).then(axios.spread((...responses) => {
+                    const rebootOne = responses[0]
+                    if (rebootOne.status === 200) {
+                        reboot_onu.play()
+                        this.alert['value'] = true
+                        this.alert['color'] = 'red'
+                        this.alert['message'] = 'onu successfully deleted'
+                        window.setInterval(() => {
+                            this.alert['value'] = false;
+                            console.log("hide alert after 5 seconds");
+                        }, 5000)
+                    }
+                }))
+
+
+            },
             async GetInfo() {
                 this.loading = true
                 if (this.deviceIp !== '') {
@@ -144,7 +411,6 @@
                     await axios.all([requestOne]).then(axios.spread((...responses) => {
                         const responseOne = responses[0]
                         this.onu_info = responseOne.data.data
-                        console.log(this.onu_info)
                     }))
                 }
                 this.loading = false
@@ -153,15 +419,14 @@
             getIpFromQuery() {
                 console.log(this.$route);
                 if (typeof this.$route.query.ip !== 'undefined') {
-                    console.log(this.$route.query.ip)
+                    // console.log(this.$route.query.ip)
                     return this.$route.query.ip;
                 }
                 return "";
             },
             getOnuIdFromQuery() {
-                console.log(this.$route);
                 if (typeof this.$route.query.OnuId !== 'undefined') {
-                    console.log(this.$route.query.OnuId)
+                    // console.log(this.$route.query.OnuId)
                     return this.$route.query.OnuId;
                 }
                 return "";

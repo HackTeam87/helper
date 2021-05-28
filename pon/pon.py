@@ -213,3 +213,61 @@ def onu_info():
             return jsonify({'data': res_onu})
         except:
             pass
+
+
+# API_ONU_REBOOT
+@ponApp.route("/api/onu/reboot", methods=['POST', 'GET'])
+def onu_reboot():
+    ip = request.args.get('ip')
+    OnuId = request.args.get('OnuId')
+    res = db.session.query(Olt.ip, Olt.modules_id, Olt.community_ro,Olt.community_rw, OltModules.module_name) \
+        .outerjoin(OltModules, Olt.modules_id == OltModules.id).filter(Olt.ip == ip).first()
+    community_rw = res.community_rw
+
+    if res.module_name == 'C-DATA: FD1204SN':
+        try:
+            res_onu = C_DATA_Base_1204S().onu_reboot(ip, community_rw,  OnuId)
+            return jsonify({'data': res_onu})
+        except:
+            pass
+    if res.module_name == 'C-DATA: FD1208SN':
+        try:
+            res_onu = C_DATA_Base_FD1208S().onu_reboot(ip, community_rw,  OnuId)
+            return jsonify({'data': res_onu})
+        except:
+            pass
+    if res.module_name == 'BDCOM: P3310C':
+        try:
+            res_onu = BD_COM_Base().onu_reboot(ip, community_rw, OnuId)
+            return jsonify({'data': res_onu})
+        except:
+            pass
+
+
+# API_ONU_DELETE
+@ponApp.route("/api/onu/delete", methods=['POST', 'GET'])
+def onu_delete():
+    ip = request.args.get('ip')
+    OnuId = request.args.get('OnuId')
+    res = db.session.query(Olt.ip, Olt.modules_id, Olt.community_ro,Olt.community_rw, OltModules.module_name) \
+        .outerjoin(OltModules, Olt.modules_id == OltModules.id).filter(Olt.ip == ip).first()
+    community_rw = res.community_rw
+
+    if res.module_name == 'C-DATA: FD1204SN':
+        try:
+            res_onu = C_DATA_Base_1204S().onu_delete(ip, community_rw,  OnuId)
+            return jsonify({'data': res_onu})
+        except:
+            pass
+    if res.module_name == 'C-DATA: FD1208SN':
+        try:
+            res_onu = C_DATA_Base_FD1208S().onu_delete(ip, community_rw,  OnuId)
+            return jsonify({'data': res_onu})
+        except:
+            pass
+    if res.module_name == 'BDCOM: P3310C':
+        try:
+            res_onu = BD_COM_Base().onu_delete(ip, community_rw, OnuId)
+            return jsonify({'data': res_onu})
+        except:
+            pass

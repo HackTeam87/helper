@@ -100,8 +100,8 @@
                                 mobile-breakpoint="0"
                                 :headers="headers"
                                 :items="filteredItems"
-                                item-key="port"
-                                sort-by="port"
+                                item-key="id"
+                                sort-by="up/down"
                                 :footer-props="footerProps"
                                 class="elevation-1"
                         >
@@ -113,19 +113,25 @@
                                     <td class="text-left">
                                         <v-btn class="ma-2">
                                             <v-icon center
-                                                    :color="getColor(item.onu_status)">mdi-router-wireless mdi-36px
+                                                    :color="getColor(item.onu_status)"
+                                            >mdi-router-wireless mdi-36px
+
                                             </v-icon>
                                             {{ item.port}}
                                         </v-btn>
 
                                     </td>
-                                    <td class="text-left" v-html="getSignal(item.onu_signal)"></td>
+                                    <td class="text-left">
+                                             <span v-html="getSignal(item.onu_signal)"></span>
+                                    </td>
                                     <td class="text-left"><span
                                             v-if="item.onu_lenght !== '0'">{{ item.onu_lenght}} m</span>
                                     </td>
                                     <td class="text-left">{{ item.mac}}</td>
                                     <td>
-                                        <v-btn class="ma-2" @click="showOnuDetail(item.id)">
+                                        <v-btn class="ma-2"
+                                                :disabled="item.onu_status === '2'"
+                                               @click="showOnuDetail(item.id)">
                                             <v-icon center>mdi-share</v-icon>
                                         </v-btn>
                                     </td>
@@ -198,7 +204,7 @@
                 tree: false,
                 footerProps: {'items-per-page-options': [50, 300, -1]},
                 headers: [
-                    {text: 'onu up/down', width: "20%", show: true, value: ''},
+                    {text: 'up/down', width: "20%", show: true, value: ''},
                     {text: 'onu_signal', width: "8%", show: true, value: ''},
                     {text: 'onu_lenght', width: "8%", show: true, value: ''},
                     {text: 'mac_onu', width: "25%", show: true, value: ''},
@@ -280,7 +286,7 @@
                 if (signal !== '' && signal !== isNaN && signal > '-24') {
                     return '<span style="color:red;">' + parseInt(signal) / 10 + ' dbm' + '</span>'
                 }
-                return 0
+                return ''
             },
             onScroll(e) {
                 if (typeof window === 'undefined') return

@@ -6,7 +6,8 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+     <link rel="stylesheet" href="{{ url_for('static', filename='vue/css/vuetify.min.css') }}">
+<!--    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">-->
     <style>
         .v-progress-circular {
             margin: 1rem;
@@ -46,7 +47,7 @@
                             <v-card-title>
 
                                 <v-spacer></v-spacer>
-                                <h2 style="color:#0275d8">Sw</h2>
+                                <h2 style="color:green">Sw</h2>
                                 <v-spacer></v-spacer>
                                 <v-text-field
                                         v-model="search2"
@@ -170,10 +171,15 @@
 </div>
 
 {% endraw %}
-<script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
-<script src="https://unpkg.com/vue-router@3.5.1/dist/vue-router.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+<!--<script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>-->
+<!--<script src="https://unpkg.com/vue-router@3.5.1/dist/vue-router.js"></script>-->
+<!--<script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>-->
+<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>-->
+
+<script src="{{ url_for('static', filename='vue/js/vue.js') }}"></script>
+<script src="{{ url_for('static', filename='vue/js/vue-router.js') }}"></script>
+<script src="{{ url_for('static', filename='vue/js/vuetify.js') }}"></script>
+<script src="{{ url_for('static', filename='vue/js/axios.min.js') }}"></script>
 <script>
 
     const router = new VueRouter({
@@ -221,8 +227,8 @@
             async GetInfo() {
                 this.loading = true
                 if (this.search !== '') {
-                    let one = 'https://switcher.golden.net.ua/api/sw/info?ip=' + this.search
-                    let two = 'https://switcher.golden.net.ua/api/sw/base?ip=' + this.search
+                    let one = 'https://switcher.golden.net.ua/sw/api/sw/info?ip=' + this.search
+                    let two = 'https://switcher.golden.net.ua/sw/api/sw/base?ip=' + this.search
 
 
                     const requestOne = axios.get(one);
@@ -242,8 +248,8 @@
             async GetInfo2() {
                 this.loading = true
                 if (this.search2 !== '') {
-                    let one = 'https://switcher.golden.net.ua/api/sw/info?ip=' + this.search2
-                    let two = 'https://switcher.golden.net.ua/api/sw/base?ip=' + this.search2
+                    let one = 'https://switcher.golden.net.ua/sw/api/sw/info?ip=' + this.search2
+                    let two = 'https://switcher.golden.net.ua/sw/api/sw/base?ip=' + this.search2
 
                     const requestOne = axios.get(one);
                     const requestTwo = axios.get(two);
@@ -320,7 +326,7 @@
             },
             async diagPort(portNum) {
                 this.loading = true
-                await axios.get('https://switcher.golden.net.ua//api/sw/port/len?ip=' + this.search + '&port=' + portNum)
+                await axios.get('https://switcher.golden.net.ua//sw/api/sw/port/len?ip=' + this.search + '&port=' + portNum)
                     .then((response) => {
                         this.pair_len = response.data.data;
                     });
@@ -350,8 +356,8 @@
         watch: {
             search: function () {
                 let route = this.$route.path;
-                if (route === '/sw') {
-                    route = '/sw';
+                if (route === '/sw/sw') {
+                    route = '/sw/sw';
                     this.GetInfo()
                 }
 

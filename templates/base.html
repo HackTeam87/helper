@@ -92,7 +92,7 @@
                         <ul class="nav nav-treeview">
 
                             <li class="nav-item">
-                                <a href="/sw/add" class="nav-link active">
+                                <a href="/sw/sw/add" class="nav-link active">
                                     <i class="far fa-circle nav-icon"></i>
                                     <p>SW</p>
                                 </a>
@@ -138,7 +138,7 @@
 
                             {% if current_user.has_role('admin')%}
                             <li class="nav-item">
-                                <a href="/sw" class="nav-link active" target="_blank">
+                                <a href="/sw/sw" class="nav-link active" target="_blank">
                                     <i class="far fa-circle nav-icon"></i>
                                     <p>Свитчер</p>
                                 </a>
@@ -172,7 +172,7 @@
 
     <div class="content-wrapper">
         <div class="content">
-            <div class="container-fluid">
+            <div class="container-fluid" style='overflow-y: auto; max-height: 100%;'>
                 <div class="row">
                     {% block content %}
                     {% endblock %}
