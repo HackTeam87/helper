@@ -12,6 +12,7 @@ class C_DATA_Base_1204S:
         for u in uptime:
             t = u.split('=')[1].split(' ')
             r_uptime = t[-3] + ' ' + t[-2] + ' ' + t[-1]
+
         return {'r_uptime': r_uptime}
 
         # olt_model = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + ' 1.3.6.1.4.1.17409.2.3.1.2.1.1.3')

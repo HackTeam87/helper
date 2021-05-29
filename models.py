@@ -98,6 +98,10 @@ class Olt(db.Model):
     desc = db.Column(db.String(200))
     created = db.Column(db.DateTime, default=datetime.now())
     modules_id = db.Column(db.Integer, db.ForeignKey('olt_modules.id', ondelete='CASCADE'))
+    status = db.Column(db.Integer)
+    sort_id = db.Column(db.Integer)
+    up = db.Column(db.DateTime)
+    down = db.Column(db.DateTime)
 
     def __repr__(self):
         return '<Olt id: {}, model: {}>'.format(self.id, self.model)

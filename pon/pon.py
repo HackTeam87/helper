@@ -75,7 +75,7 @@ def pon_add_delete(id):
 # PON
 @ponApp.route("/main/", methods=['POST', 'GET'])
 def pon():
-    olt = Olt.query.all()
+    olt = Olt.query.order_by(Olt.sort_id.asc()).all()
     return render_template('pon.html', olt=olt)
 
 
@@ -100,6 +100,7 @@ def base_info():
     if res.module_name == 'C-DATA: FD1204SN':
         try:
             r = C_DATA_Base_1204S().base_info(ip, community)
+            print(r['r_uptime'])
             olt.uptime = str(r['r_uptime'])
             db.session.commit()
             res_base = [{'desc': res.desc + ' ' + ip}, {'uptime': str(r['r_uptime'])}]
