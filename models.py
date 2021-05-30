@@ -41,6 +41,14 @@ class SwGroup(db.Model):
         return '<SwGroup id: {}, name: {}>'.format(self.id, self.name)
 
 
+class SwModules(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    module_name = db.Column(db.String(200))
+
+    def __repr__(self):
+        return '<SwModules id: {}, module_name: {}>'.format(self.id, self.module_name)
+
+
 class Sw(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     ip = db.Column(db.String(150), unique=True)
@@ -53,6 +61,7 @@ class Sw(db.Model):
     up = db.Column(db.DateTime)
     down = db.Column(db.DateTime)
     group_id = db.Column(db.Integer, db.ForeignKey('sw_group.id', ondelete='CASCADE'))
+    modules_id = db.Column(db.Integer, db.ForeignKey('sw_modules.id'))
 
     def __repr__(self):
         return '<Sw id: {}, ip: {}>'.format(self.id, self.ip)

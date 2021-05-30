@@ -1,6 +1,6 @@
 #! /usr/bin/python3
 
-class TransformOid:
+class TransformOidDlink:
 
     def hex_to_sex(self,int_port,int_mac,vlan_id):
         try:

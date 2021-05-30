@@ -3,13 +3,14 @@ import os
 import sys
 
 sys.path.insert(0, './modules/dlink')
-from mac_hex_to_sex import TransformOid
+sys.path.insert(0, './modules/huawei')
 from dlink_base import DlinkBase
+from S2326TP_EI import HuaweiBase
 from datetime import datetime
 from app import app
 from sqlalchemy.sql import select
 from app import db
-from models import Role, User, SwGroup, Sw
+from models import Role, User, SwGroup, Sw, SwModules
 from app import user_datastore
 from flask import Blueprint, render_template, request, url_for, send_from_directory, redirect, flash, jsonify
 from flask_security import login_required
@@ -83,31 +84,44 @@ def switch_delete(id):
 @swApp.route('/api/sw/info', methods=['GET'])
 def api_sw_mac():
     ip = str(request.args.get('ip'))
-    try:
-        sw = Sw.query.filter(Sw.ip == ip).first()
-        community = sw.community_ro
-        print(sw.ip)
-    except:
-        community = 'public'
+    res = db.session.query(Sw.ip, Sw.modules_id, Sw.community_ro, SwModules.module_name) \
+        .outerjoin(SwModules, Sw.modules_id == SwModules.id).filter(Sw.ip == ip).first()
+    community = res.community_ro
+    if res.module_name == 'd-link':
+        try:
+            model = DlinkBase().sw_model(ip, community)
+            return jsonify({'data': model})
+        except:
+            pass
 
-    i_class = DlinkBase()
-    model = i_class.sw_model(ip, community)
-    return jsonify({'data': model})
+    if res.module_name == 'huawei':
+        try:
+            model = HuaweiBase().sw_model(ip, community)
+            return jsonify({'data': model})
+        except:
+            pass
+
 
 
 @swApp.route('/api/sw/base', methods=['GET'])
 def api_sw_base():
-    ip = request.args.get('ip')
-    try:
-        sw = Sw.query.filter(Sw.ip == ip).first()
-        community = sw.community_ro
-        print(sw.ip)
-    except:
-        community = 'public'
+    ip = str(request.args.get('ip'))
+    res = db.session.query(Sw.ip, Sw.modules_id, Sw.community_ro, SwModules.module_name) \
+        .outerjoin(SwModules, Sw.modules_id == SwModules.id).filter(Sw.ip == ip).first()
+    community = res.community_ro
+    if res.module_name == 'd-link':
+        try:
+            s = DlinkBase().sw_base(ip, community)
+            return jsonify({'data': s})
+        except:
+            pass
+    if res.module_name == 'huawei':
+        try:
+            s = HuaweiBase().sw_base(ip, community)
+            return jsonify({'data': s})
+        except:
+            pass
 
-    b_class = DlinkBase()
-    s = b_class.sw_base(ip, community)
-    return jsonify({'data': s})
 
 @swApp.route('/api/sw/port/len', methods=['GET'])
 def api_sw_port_len():

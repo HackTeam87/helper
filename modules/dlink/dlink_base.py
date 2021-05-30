@@ -1,7 +1,7 @@
 #! /usr/bin/python3
 import os
 import time
-from mac_hex_to_sex import TransformOid
+from mac_hex_to_dlink import TransformOidDlink
 
 
 class DlinkBase:
@@ -137,7 +137,7 @@ class DlinkBase:
         def mac():
             ma = []
             for m in sh_mac:
-                ma.append((TransformOid().get_mac(m)))
+                ma.append((TransformOidDlink().get_mac(m)))
             return ma
 
         pc = port_count()

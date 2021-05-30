@@ -2,9 +2,6 @@
 #Import Modules
 import os
 import sys
-sys.path.insert(0, './modules/dlink')
-from mac_hex_to_sex import TransformOid
-from dlink_base import DlinkBase
 from datetime import datetime
 from app import app
 from sqlalchemy.sql import select
