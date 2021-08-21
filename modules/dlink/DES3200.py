@@ -6,37 +6,50 @@ from mac_hex_to_huawei import TransformOidHuawei
 # ip = '10.2.1.117'
 # community ='public'
 
-class HuaweiBase:
+class DlinkBase:
+    # Определяем модель свитча
     def sw_model(self, ip, community):
-        # model
-        sw_m = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + ' iso.3.6.1.2.1.1.1.0')
-        res = []
-        for m in sw_m:
-            s_model = m.split('"')
-            for test in s_model:
-                res.append( test.split(' '))
-        model = res[1][0]
+        # Имя свитча
+        sw_n = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + ' 1.3.6.1.2.1.1.1')
+        # Описание свитча
+        sw_desc = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + ' 1.3.6.1.2.1.1.5')
+        # Аптайм
+        sw_uptime = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + ' 1.3.6.1.2.1.1.3')
 
-        # description
-        sw_desc = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + ' iso.3.6.1.2.1.1.5.0')
+        port_n = ''
+        sw_d = ''
+        sw_u = ''
+
         for d in sw_desc:
             sw_d = d.split(':')[1].strip().strip('"').strip('"\n').strip('\"').strip('\\')
-
-        # uptime
-        sw_uptime = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + ' iso.3.6.1.2.1.1.3.0')
         for u in sw_uptime:
             t = u.split('=')[1].split(' ')
             sw_u = t[-3] + ' ' + t[-2] + ' ' + t[-1]
 
+        for n in sw_n:
+            model = n.split(':')[1].strip().strip('"')
+            if model == 'D-Link DES-1228/ME Metro Ethernet Switch':
+                port_n = 28
+            if model == 'D-Link DES-3200-26 Fast Ethernet Switch':
+                port_n = 26
+            if model == 'DES-3200-26/C1 Fast Ethernet Switch':
+                port_n = 26
+            if model == 'DES-3200-28/C1 Fast Ethernet Switch':
+                port_n = 28
+            if model == 'D-Link DES-3200-28 Fast Ethernet Switch':
+                port_n = 28
+            if model == 'DES-3200-28F/C1 Fast Ethernet Switch':
+                port_n = 28
+            if model == 'D-Link DES-3200-18 Fast Ethernet Switch':
+                port_n = 18
+            if model == 'DES-1210-28/ME/B2':
+                port_n = 28
+            if model == 'DGS-3420-28SC Gigabit Ethernet Switch':
+                port_n = 28
+            if model == 'DGS-3000-26TC Gigabit Ethernet Switch':
+                port_n = 26
 
-        if model == 'S2326TP-EI':
-            count_p = '26'
-
-        if model == 'S2318TP-EI':
-            count_p = '18'
-
-
-        return [{'model': model}, {'sw_d': sw_d}, {'sw_u': sw_u}, {'count_p': count_p}]
+        return [{'model': model}, {'sw_d': sw_d}, {'sw_u': sw_u}, {'count_p': port_n}]
 
     def sw_base(self, ip, community, *community_rw):
         p_count = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + ' .1.3.6.1.2.1.17.1.4.1.2')
@@ -49,6 +62,8 @@ class HuaweiBase:
                                   'in_c': '', 'out_c': '', 'rx_errors': '', 'tx_errors': ''})
         except:
             pass
+
+           
 
         p_status = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + ' 1.3.6.1.2.1.2.2.1.8')
         port_status = []
@@ -122,19 +137,11 @@ class HuaweiBase:
         except:
             pass
 
-        def has_try(string1,string2):
-            if string1 == string2:
-                return True
-            else:
-                return False
-
-
         for item in port_list:
 
             try:
                 for item2 in port_status:
                     if item['port_index'] == item2['port_index']:
-                    # if has_try(item['port_index'],item2['port_index']):
                         item['status'] = item2['status']
             except:
                 pass
@@ -191,14 +198,4 @@ class HuaweiBase:
 
 
         return port_list
-
-    def cab_init(self, ip, community, community_rw, port):
-        for cinit in os.popen(
-                'snmpset -v2c -c ' + community_rw + ' ' + ip + ' 1.3.6.1.4.1.2011.5.25.31.1.1.7.1.4.' + str(port) + ' i 1'):
-            time.sleep(3)
-
-        for len1 in os.popen(
-                'snmpwalk -v2c -c ' + community + ' ' + ip + ' 1.3.6.1.4.1.2011.5.25.31.1.1.7.1.3.' + str(port)):
-            pair1 = len1.split('=')[1].split(' ')[-1].strip()
-        return [pair1]
 

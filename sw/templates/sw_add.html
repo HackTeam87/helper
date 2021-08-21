@@ -117,7 +117,7 @@
                         {%for g in group %}
                         <tr>
                             <td>
-                                <a class="btn  btn-sm" href="/sw/add/group/delete={{g.id}}">
+                                <a class="btn  btn-sm" href="/sw/sw/add/group/delete={{g.id}}">
                                     <i class="far fa-times-circle"></i>
                                 </a>
                                 {{g.name}}
@@ -125,7 +125,7 @@
                                 {% if g.id == s.group_id %}
                                 <ul>
                                     <li>
-                                        <a class="btn  btn-xs" href="/sw/add/switch/delete={{s.id}}">
+                                        <a class="btn  btn-xs" href="/sw/sw/add/switch/delete={{s.id}}">
                                             <i class="far fa-times-circle"></i>
                                         </a>
                                         <span>

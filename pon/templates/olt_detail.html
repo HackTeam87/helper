@@ -40,7 +40,24 @@
                     </div>
                 </div>
 
+
+                <v-alert
+                dark
+                v-model="alert.value"
+                border="left"
+                elevation="2"
+                colored-border
+                icon="mdi-twitter"
+                transition="slide-x-transition"
+                style="width: 60%;position: absolute;z-index: 999;text-align: center;"
+                :color="alert.color"
+        >
+            {{alert.message}}
+        </v-alert>
+
                 <v-flex sm12 style="overflow: auto">
+
+             
 
                     <v-card>
                         <v-container class="grey lighten-5">
@@ -111,13 +128,13 @@
                                 <tbody>
                                 <tr v-for="(item,index) in items" :key="index">
                                     <td class="text-left">
-                                        <v-btn class="ma-2">
-                                            <v-icon center
-                                                    :color="getColor(item.onu_status)"
-                                            >mdi-router-wireless mdi-36px
-
-                                            </v-icon>
+                                        <v-btn class="ma-2" 
+                                        :disabled="item.onu_status === '2'"
+                                        @click="showOnuDetail(item.id)">
+                                            <v-icon center :color="getColor(item.onu_status)"
+                                            >mdi-router-wireless mdi-36px</v-icon>
                                             {{ item.port}}
+                                            <v-icon center>mdi-share</v-icon>
                                         </v-btn>
 
                                     </td>
@@ -129,12 +146,45 @@
                                     </td>
                                     <td class="text-left">{{ item.mac}}</td>
                                     <td>
-                                        <v-btn class="ma-2"
-                                                :disabled="item.onu_status === '2'"
-                                               @click="showOnuDetail(item.id)">
-                                            <v-icon center>mdi-share</v-icon>
+
+
+                                        <v-dialog
+                                        transition="dialog-top-transition"
+                                        max-width="600"
+                                >
+                                    <template v-slot:activator="{ on, attrs }">
+                                        <v-btn class="ma-2" color="error" v-bind="attrs" v-on="on" >
+                                            <v-icon>
+                                                mdi-delete-forever
+                                            </v-icon>
                                         </v-btn>
+                                    </template>
+                                    <template v-slot:default="dialog">
+                                        <v-card>
+                                            <v-toolbar color="error" dark>
+                                                do you really want to delete onu   {{item.port}} {{item.mac}}?
+                                            </v-toolbar>
+                                            <v-card-actions class="justify-end">
+                                                <v-btn text
+                                                       @click="DeleteOnu(item.id) , dialog.value = false"
+                                                >
+                                                    Delete
+                                                </v-btn>
+                                                <v-spacer></v-spacer>
+                                                <v-btn
+                                                        text
+                                                        @click="dialog.value = false"
+                                                >Close
+                                                </v-btn>
+                                            </v-card-actions>
+                                        </v-card>
+                                    </template>
+                                </v-dialog>
+
                                     </td>
+                                    <td class="text-left"><span
+                                        v-if="item.onu_lenght !== '0'">{{ item.onu_desc}}</span>
+                                </td>
                                 </tr>
 
                                 </tbody>
@@ -176,6 +226,8 @@
 
 <script>
 
+    let reboot_onu = new Audio('../../../static/mp3/twitter_whistle.mp3')
+
     const router = new VueRouter({
         mode: 'history',
         routes: [
@@ -193,6 +245,7 @@
         vuetify: new Vuetify(),
         data() {
             return {
+                alert: {'value': false, 'color': '', 'message': ''},
                 loading: false,
                 interval: {},
                 value: 0,
@@ -204,11 +257,12 @@
                 tree: false,
                 footerProps: {'items-per-page-options': [50, 300, -1]},
                 headers: [
-                    {text: 'up/down', width: "20%", show: true, value: ''},
-                    {text: 'onu_signal', width: "8%", show: true, value: ''},
-                    {text: 'onu_lenght', width: "8%", show: true, value: ''},
-                    {text: 'mac_onu', width: "25%", show: true, value: ''},
-                    {text: 'info', width: "20%", show: true, value: ''},
+                    {text: 'up/down', width: "10%", show: true, value: ''},
+                    {text: 'onu_signal', width: "10%", show: true, value: ''},
+                    {text: 'onu_lenght', width: "10%", show: true, value: ''},
+                    {text: 'onu_mac', width: "10%", show: true, value: ''},
+                    {text: 'onu_delete', width: "10%", show: true, value: ''},
+                    {text: 'onu_desc', width: "25%", show: true, value: ''},
                 ],
                 ex3: {label: 'thumb-color', val: 50, color: 'red'},
                 base_info: [],
@@ -251,6 +305,25 @@
                     }))
                 }
                 this.loading = false
+
+            },
+            async DeleteOnu(OnuId) {
+                let del = 'https://switcher.golden.net.ua/pon/api/onu/delete?ip=' + this.deviceIp + '&OnuId=' + OnuId
+                const deleteOne = axios.get(del);
+                await axios.all([deleteOne]).then(axios.spread((...responses) => {
+                    const deleteOne = responses[0]
+                    if (deleteOne.status === 200) {
+                        reboot_onu.play()
+                        this.alert['value'] = true
+                        this.alert['color'] = 'red'
+                        this.alert['message'] = 'onu successfully deleted'
+                        window.setInterval(() => {
+                            this.alert['value'] = false;
+                            console.log("hide alert after 5 seconds");
+                        }, 5000)
+                    }
+                }))
+
 
             },
             getIpFromQuery() {

@@ -6,8 +6,8 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
-     <link rel="stylesheet" href="{{ url_for('static', filename='vue/css/vuetify.min.css') }}">
-<!--    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">-->
+    <link rel="stylesheet" href="{{ url_for('static', filename='vue/css/vuetify.min.css') }}">
+    <!--    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">-->
     <style>
         .v-progress-circular {
             margin: 1rem;
@@ -42,25 +42,7 @@
 
                 <v-flex sm12 style="overflow: auto">
 
-                    <v-form v-on:submit.prevent="GetInfo2()">
-                        <v-card>
-                            <v-card-title>
 
-                                <v-spacer></v-spacer>
-                                <h2 style="color:green">Sw</h2>
-                                <v-spacer></v-spacer>
-                                <v-text-field
-                                        v-model="search2"
-                                        label="Search"
-                                        placeholder="10.1.1.11"
-                                        hide-details
-                                >
-                                </v-text-field>
-
-                                <v-btn @click="GetInfo2()">show</v-btn>
-                            </v-card-title>
-                        </v-card>
-                    </v-form>
                     <v-card>
                         <v-container class="grey lighten-5">
                             <v-row no-gutters>
@@ -75,23 +57,49 @@
                             </v-row>
                         </v-container>
                     </v-card>
-
+                    <v-card-title>
+                        <v-alert
+                                dark
+                                v-model="alert.value"
+                                border="left"
+                                elevation="2"
+                                colored-border
+                                icon="mdi-twitter"
+                                transition="slide-x-transition"
+                                style="width: 74%;position: absolute;z-index: 999;text-align: center;"
+                                :color="alert.color"
+                        >
+                            {{alert.message}}
+                        </v-alert>
+                        <v-spacer></v-spacer>
+                        <v-text-field
+                                v-model="searchItem"
+                                append-icon="mdi-magnify"
+                                label="Filter (mac,vlan,port)"
+                                single-line
+                                hide-details
+                        ></v-text-field>
+                    </v-card-title>
                     <v-data-table
                             primary
                             mobile-breakpoint="0"
                             :headers="_headers"
-                            :items="base_list"
+                            :items="filteredItems"
                             item-key="id"
                             sort-by="port"
                             :footer-props="footerProps"
                             class="elevation-1"
                     >
 
+
                         <template v-slot:body="{ items }">
 
                             <tbody>
+
                             <tr v-for="(item,index) in items" :key="index">
+
                                 <td class="text-left">
+
                                     <v-tooltip center>
                                         <template v-slot:activator="{ on, attrs }">
                                             <v-btn class="ma-2"
@@ -109,9 +117,9 @@
                                 </td>
 
                                 <td class="text-left">
-                                    <span v-html="operStatus(item.speed)"></span>
+                                    <span v-if="item.status === '1' && item.tag" v-html="'('+ item.tag+')'" ></span>
+                                    <span v-if="item.status === '1'" v-html="operStatus(item.speed)"></span>
                                 </td>
-                                <td class="text-left">{{ item.desc}}</td>
                                 <td class="text-left">
                                     <div style='overflow-y: auto; max-height: 80px;'>
                                         <span v-for="(m, index) in item.mac_address" :key="index">{{ m }}<br></span>
@@ -128,23 +136,20 @@
                                           'font-weight': boldBySizes(item.in_c, item.out) }"></span>
                                 </td>
                                 <td class="text-left">
+                                     <span v-html="colorErrors(item.rx_errors, item.tx_errors)">
+                                     </span>
+                                </td>
+                                <td class="text-left">
 
                                     <div>
                                         <a href="javascript:void(0);" @click="diagPort(item.port)"
                                            title="Click for reload info" style="text-decoration: none;">
-                                            <div>
-                                                <span>{{pair_len[0]}} {{pair_len[1]}}</span>
-                                                <br v-if="pair_len.length !== 0">
-                                                <span>{{pair_len[2]}} {{pair_len[3]}}</span>
-                                                <br v-if="pair_len.length !== 0">
-                                                <span>{{pair_len[4]}} {{pair_len[5]}}</span>
-                                                <br v-if="pair_len.length !== 0">
-                                                <span>{{pair_len[6]}} {{pair_len[7]}}</span>
-                                            </div>
-                                            <span v-if="pair_len.length === 0">Опросить</span>
+
+                                            <span>Опросить</span>
                                         </a>
                                     </div>
                                 </td>
+                                <td class="text-left">{{ item.desc}}</td>
                             </tr>
                             </tbody>
 
@@ -181,7 +186,7 @@
 <script src="{{ url_for('static', filename='vue/js/vuetify.js') }}"></script>
 <script src="{{ url_for('static', filename='vue/js/axios.min.js') }}"></script>
 <script>
-
+    let port_len = new Audio('../../../static/mp3/twitter_whistle.mp3')
     const router = new VueRouter({
         mode: 'history',
         routes: [
@@ -194,6 +199,7 @@
         vuetify: new Vuetify(),
         data() {
             return {
+                alert: {'value': false, 'color': '', 'message': []},
                 loading: false,
                 interval: {},
                 value: 0,
@@ -201,16 +207,17 @@
                 error: '',
                 fab: false,
                 search: '',
-                search2: '',
+                searchItem: '',
                 footerProps: {'items-per-page-options': [28, 48, -1]},
                 headers: [
-                    {text: 'port', width: "5%", show: true, value: ''},
-                    {text: 'link', width: "10%", show: true, value: ''},
-                    {text: 'desc', width: "3%", show: true, value: ''},
+                    {text: 'port', width: "4%", show: true, value: ''},
+                    {text: 'link', width: "12%", show: true, value: ''},
                     {text: 'mac_address', width: "17%", show: true, value: ''},
-                    {text: 'vlan_id', width: "8%", show: true, value: ''},
-                    {text: 'In/Out', width: "20%", show: true, value: ''},
+                    {text: 'vlan_id', width: "15%", show: true, value: ''},
+                    {text: 'In/Out', width: "15%", show: true, value: ''},
+                    {text: 'Rx_errors/Tx_errors', width: "15%", show: true, value: ''},
                     {text: 'cable', width: "20%", show: true, value: ''},
+                    {text: 'desc', width: "3%", show: true, value: ''},
                 ],
                 base_list: [],
                 base_info: [],
@@ -245,24 +252,26 @@
                 this.loading = false
 
             },
-            async GetInfo2() {
+            async diagPort(portNum) {
                 this.loading = true
-                if (this.search2 !== '') {
-                    let one = 'https://switcher.golden.net.ua/sw/api/sw/info?ip=' + this.search2
-                    let two = 'https://switcher.golden.net.ua/sw/api/sw/base?ip=' + this.search2
-
-                    const requestOne = axios.get(one);
-                    const requestTwo = axios.get(two);
-                    await axios.all([requestOne, requestTwo]).then(axios.spread((...responses) => {
-                        const responseOne = responses[0]
-                        const responseTwo = responses[1]
-                        this.base_info = responseOne.data.data
-                        this.base_list = responseTwo.data.data
-                    }))
-                }
-
+                await axios.get('https://switcher.golden.net.ua/sw/api/sw/port/len?ip=' + this.search + '&port=' + portNum)
+                    .then((response) => {
+                        let res = response
+                        console.log(response)
+                        this.pair_len = res.data.data;
+                        if (res.status === 200) {
+                            port_len.play()
+                            this.alert['value'] = true
+                            this.alert['color'] = 'green'
+                            this.alert['message'] = res.data.data
+                            window.setInterval(() => {
+                                this.alert['value'] = false;
+                                console.log("hide alert after 20 seconds");
+                            }, 20000)
+                        }
+                    });
                 this.loading = false
-
+                // return "<span>" + this.pair_len[0] + "-" + "M" + "<br>" + this.pair_len[0] + "-" + "M" + "</span>";
             },
             getIpFromQuery() {
                 console.log(this.$route);
@@ -280,6 +289,7 @@
                 else return 'error'
             },
             operStatus: function (d) {
+                if (d === '10000000') return '<span style="color: darkgreen">10-Full</span>';
                 if (d === '100000000') return '<span style="color: darkgreen">100-Full</span>';
                 if (d === '1000000000') return '<span style="color: darkgreen">1G-Full</span>';
                 if (d === '4294967295') return '<span style="color: darkgreen">10G-Full</span>';
@@ -324,15 +334,23 @@
 
                 return weight
             },
-            async diagPort(portNum) {
-                this.loading = true
-                await axios.get('https://switcher.golden.net.ua//sw/api/sw/port/len?ip=' + this.search + '&port=' + portNum)
-                    .then((response) => {
-                        this.pair_len = response.data.data;
-                    });
-                this.loading = false
-                // return "<span>" + this.pair_len[0] + "-" + "M" + "<br>" + this.pair_len[0] + "-" + "M" + "</span>";
+            colorErrors: function (rx_errors, tx_errors) {
+                if (rx_errors === '0' || rx_errors === 0) {
+                    rx_errors = '<span style="color:gray;">' + rx_errors + '<span/>'
+                } else if (rx_errors > '0' || rx_errors > 0) {
+                    rx_errors = '<span style="color:red;">' + rx_errors + '<span/>'
+                }
+                if (tx_errors === '0' || tx_errors === 0) {
+                    tx_errors = '<span style="color:gray;">' + tx_errors + '<span/>'
+                } else if (tx_errors > '0' || tx_errors > 0) {
+                    tx_errors = '<span style="color:red;">' + tx_errors + '<span/>'
+                }
+
+                if (typeof tx_errors == 'undefined') {
+                    return rx_errors
+                } else return rx_errors + '/' + tx_errors
             },
+
             onScroll(e) {
                 if (typeof window === 'undefined') return
                 const top = window.pageYOffset || e.target.scrollTop || 0
@@ -367,8 +385,14 @@
         computed: {
             _headers() {
                 return this.headers.filter(x => x.show)
+            },
+            filteredItems() {
+                return this.base_list.filter((i) => {
+                    return !this.search || (i.mac_address + '||' + i.port + '||' + i.vlan + '||')
+                        .toUpperCase().indexOf(this.searchItem.toUpperCase()) !== -1
+                })
             }
-        }
+        },
     })
 
 </script>

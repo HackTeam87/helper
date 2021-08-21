@@ -112,7 +112,8 @@ def base_info():
             r = C_DATA_Base_FD1208S().base_info(ip, community)
             olt.uptime = str(r['r_uptime'])
             db.session.commit()
-            res_base = [{'desc': res.desc + ' ' + ip}, {'uptime': str(r['r_uptime'])}]
+            res_base = [{'desc': res.desc + ' ' + ip}, {'uptime': str(r['r_uptime'])}, 
+             {'temp': 'temp ' + r['r_temp'] + ' ℃'}, {'cpu': 'cpu ' + r['r_cpu'] + '%'}]
             return jsonify({'data': res_base})
         except:
             pass

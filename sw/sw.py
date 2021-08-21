@@ -125,17 +125,22 @@ def api_sw_base():
 
 @swApp.route('/api/sw/port/len', methods=['GET'])
 def api_sw_port_len():
-    ip = request.args.get('ip')
+    ip = str(request.args.get('ip'))
     port = request.args.get('port')
-    try:
-        sw = Sw.query.filter(Sw.ip == ip).first()
-        community = sw.community_ro
-        community_rw = sw.community_rw
-        print(sw.ip)
-    except:
-        community = 'public'
-        community_rw = 'private'
-
-    b_class = DlinkBase()
-    s = b_class.cab_init(ip,  community, community_rw, port)
-    return jsonify({'data': s})
+    res = db.session.query(Sw.ip, Sw.modules_id, Sw.community_ro, Sw.community_rw, SwModules.module_name) \
+        .outerjoin(SwModules, Sw.modules_id == SwModules.id).filter(Sw.ip == ip).first()
+    community_ro = res.community_ro
+    community_rw = res.community_ro
+    if res.module_name == 'd-link':
+        try:
+            s = DlinkBase().cab_init(ip,  community_ro, community_rw, port)
+            return jsonify({'data': s})
+        except:
+            pass
+    if res.module_name == 'huawei':
+        try:
+            s = HuaweiBase().cab_init(ip,  community_ro, community_rw, port)
+            return jsonify({'data': s})
+        except:
+            pass
+    

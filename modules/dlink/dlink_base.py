@@ -46,7 +46,10 @@ class DlinkBase:
                 port_n = 28
             if model == 'DGS-3000-26TC Gigabit Ethernet Switch':
                 port_n = 26
-
+            if model == 'DGS-3120-24SC Gigabit Ethernet Switch':
+                port_n = 26
+            if model == 'DES-3200-28F Fast Ethernet Switch':
+                port_n = 28
         return [{'model': model}, {'sw_d': sw_d}, {'sw_u': sw_u}, {'count_p': port_n}]
 
     def vlan_name(self, ip, community):
@@ -76,6 +79,7 @@ class DlinkBase:
         # IN/OUT
         sw_port_in = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + ' .1.3.6.1.2.1.2.2.1.10')
         sw_port_out = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + ' .1.3.6.1.2.1.2.2.1.16')
+        sw_port_errors = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + ' .1.3.6.1.2.1.16.1.1.1.8')
 
         def in_out():
             in_count = []
@@ -117,10 +121,10 @@ class DlinkBase:
                 m_sw = self.sw_model(ip, community)[-1]['count_p']
                 port_list = []
                 for n in port_status():
-                    if n['port'] and int(n['port']) < int(m_sw + 1) not in port_list:
+                    if n['port'] and int(n['port']) < int(m_sw + 1) != port_list:
                         port_list.append(
                             {'desc': '', 'port': n['port'], 'mac_address': [], 'vlan': [], 'status': n['status'],
-                             'speed': '', 'in_c': '', 'out_c': ''})
+                             'speed': '', 'in_c': '', 'out_c': '','tag': []})
             except:
                 print('not found device model')
             return port_list
@@ -140,8 +144,31 @@ class DlinkBase:
                 ma.append((TransformOidDlink().get_mac(m)))
             return ma
 
+        def errors():
+            errors = []
+            for error in sw_port_errors:
+                errors.append({'port': error.split('=')[0].split('.')[-1].strip(),
+                              'rx_errors': error.split('=')[1].split(' ')[-1].strip()})
+            return errors
+
+        def get_vlan_tag(vlan_id, count_port):
+            port_vlan_tag = []
+            r = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + ' 1.3.6.1.2.1.17.7.1.4.3.1.4.' + vlan_id)
+            for res in r:
+                hex_vlan = res.split(':')[1].strip()
+            t = list(''.join(['%08d' % int(bin(int('0x%s' % i, 16)).replace('0b', '')) for i in hex_vlan.split(' ')]))
+            for i in range(0, int(count_port)):
+                if t[i] == '1':
+                    port_vlan_tag.append({'port': str(i + 1).strip(), 'tag': 'U'})
+                if t[i] == '0':
+                    port_vlan_tag.append({'port': str(i + 1).strip(), 'tag': 'T'})
+            return port_vlan_tag
+
+
+
         pc = port_count()
         ma = mac()
+        er = errors()
         ps = port_speed()
         in_n = in_out()
         out_n = out_in()
@@ -183,8 +210,23 @@ class DlinkBase:
                     for m in ma:
                         if m['port'].strip() == c['port'].strip():
                             c['mac_address'].append(m['mac'] + ' ' + '(' + m['vlan_id'] + ')')
-                            if m['vlan_id'] not in c['vlan']:
+                            if m['vlan_id'] != c['vlan']:
                                 c['vlan'].append(m['vlan_id'])
+            except:
+                pass
+
+            try:
+                if str(er[int(c['port'])]['port'].strip() == str(c['port'].strip())):
+                    for e in er:
+                        if e['port'].strip() == c['port'].strip():
+                            c['rx_errors'] = e['rx_errors']
+            except:
+                pass
+
+            try:
+                for item in get_vlan_tag(c['vlan'][0] ,self.sw_model(ip, community)[-1]['count_p']):
+                    if item['port'] == c['port']:
+                        c['tag'].append(item['tag'])
             except:
                 pass
 

@@ -63,39 +63,7 @@
                             <v-row align="center" justify="space-between">
 
 
-                                <v-dialog
-                                        transition="dialog-top-transition"
-                                        max-width="600"
-                                >
-                                    <template v-slot:activator="{ on, attrs }">
-                                        <v-btn color="error" v-bind="attrs" v-on="on" disabled>
-                                            <v-icon>
-                                                mdi-autorenew
-                                            </v-icon>
-                                            Reset
-                                        </v-btn>
-                                    </template>
-                                    <template v-slot:default="dialog">
-                                        <v-card>
-                                            <v-toolbar color="error" dark>
-                                                do you really want to reset onu?
-                                            </v-toolbar>
-                                            <v-card-actions class="justify-end">
-                                                <v-btn text
-                                                       @click="ResetOnu() , dialog.value = false"
-                                                >
-                                                    Reset
-                                                </v-btn>
-                                                <v-spacer></v-spacer>
-                                                <v-btn
-                                                        text
-                                                        @click="dialog.value = false"
-                                                >Close
-                                                </v-btn>
-                                            </v-card-actions>
-                                        </v-card>
-                                    </template>
-                                </v-dialog>
+                                
 
                                 <v-dialog
                                         transition="dialog-top-transition"
@@ -207,7 +175,7 @@
                                         <v-subheader>REPORTS</v-subheader>
                                         <v-container>
                                             <v-row>
-                                                <v-col cols="12" sm="3">
+                                                <v-col cols="12" sm="4">
                                                     <v-data-table
                                                             mobile-breakpoint="0"
                                                             :headers="headers1"
@@ -248,7 +216,7 @@
                                                                 <td class="text-left">
                                                                          <span v-for="(m, index) in item.user_mac"
                                                                                :key="index">
-                                                                           eth:({{ m.user_port }}) {{ m.user_mac }}
+                                                                           eth:({{ m.user_port }}) {{ m.user_mac }} 
                                                                              <br>
                                                                          </span>
                                                                 </td>
@@ -257,7 +225,28 @@
                                                         </template>
                                                     </v-data-table>
                                                 </v-col>
-                                                <v-col cols="12" sm="6">
+                                                <v-col cols="12" sm="2">
+                                                    <v-data-table
+                                                            mobile-breakpoint="0"
+                                                            :headers="headers3"
+                                                            :items="onu_info"
+                                                            :hide-default-footer="true">
+
+                                                        <template v-slot:body="{ items }">
+                                                            <tbody>
+                                                            <tr v-for="(item,index) in items" :key="index">
+                                                                <td class="text-left">
+                                                                         <span v-for="(v, index) in item.port_vlan" :key="index">
+                                                                           eth:({{v.port_vlan}})  vlan:({{v.user_vlan}})
+                                                                           <br>
+                                                                         </span>
+                                                                </td>
+                                                            </tr>
+                                                            </tbody>
+                                                        </template>
+                                                    </v-data-table>
+                                                </v-col>
+                                                <v-col cols="12" sm="2">
                                                     <v-list dense>
                                                         <v-list-item-group color="primary">
                                                             <v-list-item v-for="(i, index) in onu_info" :key="index">
@@ -346,6 +335,9 @@
                 headers2: [
                     {text: 'Mac-Address', width: '33%'},
                 ],
+                headers3: [
+                    {text: 'Vlan-Id', width: '25%'}
+                ],
                 loading: false,
                 interval: {},
                 value: 0,
@@ -385,11 +377,11 @@
 
             },
              async DeleteOnu() {
-                let reboot = 'https://switcher.golden.net.ua/pon/api/onu/delete?ip=' + this.deviceIp + '&OnuId=' + this.OnuId
-                const rebootOne = axios.get(reboot);
-                await axios.all([rebootOne]).then(axios.spread((...responses) => {
-                    const rebootOne = responses[0]
-                    if (rebootOne.status === 200) {
+                let del = 'https://switcher.golden.net.ua/pon/api/onu/delete?ip=' + this.deviceIp + '&OnuId=' + this.OnuId
+                const deleteOne = axios.get(del);
+                await axios.all([deleteOne]).then(axios.spread((...responses) => {
+                    const deleteOne = responses[0]
+                    if (deleteOne.status === 200) {
                         reboot_onu.play()
                         this.alert['value'] = true
                         this.alert['color'] = 'red'
@@ -411,6 +403,7 @@
                     await axios.all([requestOne]).then(axios.spread((...responses) => {
                         const responseOne = responses[0]
                         this.onu_info = responseOne.data.data
+                        console.log(this.onu_info)
                     }))
                 }
                 this.loading = false

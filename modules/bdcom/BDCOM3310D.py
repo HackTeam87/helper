@@ -189,8 +189,8 @@ class BD_COM_Base:
         OnuVolt = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + ' 1.3.6.1.4.1.3320.101.10.5.1.3.' + OnuId)
         for vol in OnuVolt:
             onu_volt = vol.split('=')[1].split(':')[-1].strip().strip('"')
-            onu_volt = int(onu_volt) / 1000
-            onu_volt = "%.1f" % onu_volt
+            onu_volt = int(onu_volt) / 10000
+            onu_volt = "%.2f" % onu_volt
 
         # OnuTemp
         OnuTemp = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + ' 1.3.6.1.4.1.3320.101.10.5.1.2.' + OnuId)
