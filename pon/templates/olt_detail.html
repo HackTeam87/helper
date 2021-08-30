@@ -74,6 +74,7 @@
                                 </v-col>
                             </v-row>
                         </v-container>
+                        
                     </v-card>
                     <v-card>
                         <v-container class="grey lighten-5">
@@ -81,119 +82,143 @@
                             <v-row no-gutters>
 
                                 <v-col cols="12" sm="3" v-for="(c, index) in port_onu_count" :key="index">
-                                    <v-card class="pa-2" outlined tile disabled>
+                                    <v-card class="pa-2" outlined tile  >
+                                        <v-icon center :color="getColor(c.pon_status)">mdi-sitemap mdi-24px </v-icon>
                                         <v-slider
                                                 v-model="c.onu_count"
                                                 :label="c.port_id"
                                                 :thumb-color="PortOnuCount(c.onu_count)"
                                                 :max="c.port_holding"
                                                 thumb-label="always"
+                                                readonly
                                         ></v-slider>
                                     </v-card>
                                 </v-col>
                             </v-row>
+
                             <v-row align="center" justify="space-around">
 
                                 <v-btn dark class="ma-2" outlined color="green" @click="GetTree()">tree update</v-btn>
-
+    
                             </v-row>
+
+                        </v-container>
+
+                        
+
+                        <v-card v-if="tree">
+                            <v-card-title>
+                                <v-spacer></v-spacer>
+                                <v-text-field
+                                        v-model="search"
+                                        append-icon="mdi-magnify"
+                                        label="Filter (onu,mac,signal,len)"
+                                        single-line
+                                        hide-details
+                                ></v-text-field>
+                            </v-card-title>
+                            <v-data-table
+                                    primary
+                                    mobile-breakpoint="0"
+                                    :headers="headers"
+                                    :items="filteredItems"
+                                    item-key="id"
+                                    sort-by="up/down"
+                                    :footer-props="footerProps"
+                                    class="elevation-1"
+                            >
+    
+                                <template v-slot:body="{ items }">
+    
+                                    <tbody>
+                                    <tr v-for="(item,index) in items" :key="index">
+                                        <td class="text-left">
+                                            <v-btn class="ma-2" 
+                                            :disabled="item.onu_status === '2'"
+                                            @click="showOnuDetail(item.id)">
+                                                <v-icon center :color="getColor(item.onu_status)"
+                                                >mdi-router-wireless mdi-36px</v-icon>
+                                                {{ item.port}}
+                                                <v-icon center>mdi-share</v-icon>
+                                            </v-btn>
+    
+                                        </td>
+                                        <td class="text-left">
+                                                 <span v-html="getSignal(item.onu_signal)"></span>
+                                        </td>
+                                        <td class="text-left"><span
+                                                v-if="item.onu_lenght !== '0'">{{ item.onu_lenght}} m</span>
+                                        </td>
+                                        <td class="text-left">{{ item.mac}}</td>
+                                        <td class="text-left">
+                                            <div style='overflow-y: auto; max-height: 80px;'>
+                                                <span v-for="(um, index) in item.user_mac" :key="index">{{ um }}<br></span>
+                                            </div>  
+                                          </td>
+                                        <td>
+    
+    
+                                            <v-dialog
+                                            transition="dialog-top-transition"
+                                            max-width="600"
+                                    >
+                                        <template v-slot:activator="{ on, attrs }">
+                                            <v-btn class="ma-2" color="error" v-bind="attrs" v-on="on" >
+                                                <v-icon>mdi-delete-forever </v-icon>
+                                            </v-btn>
+                                        </template>
+                                        <template v-slot:default="dialog">
+                                            <v-card>
+                                                <v-toolbar color="error" dark>
+                                                    do you really want to delete onu   {{item.port}} {{item.mac}}?
+                                                </v-toolbar>
+                                                <v-card-actions class="justify-end">
+                                                    <v-btn text
+                                                           @click="DeleteOnu(item.id) , dialog.value = false"
+                                                    >
+                                                        Delete
+                                                    </v-btn>
+                                                    <v-spacer></v-spacer>
+                                                    <v-btn
+                                                            text
+                                                            @click="dialog.value = false"
+                                                    >Close
+                                                    </v-btn>
+                                                </v-card-actions>
+                                            </v-card>
+                                        </template>
+                                    </v-dialog>
+    
+                                        </td>
+                                        <td class="text-left"><span
+                                            v-if="item.onu_lenght !== '0'">{{ item.onu_desc}}</span>
+                                    </td>
+                                    </tr>
+    
+                                    </tbody>
+    
+                                </template>
+    
+    
+                            </v-data-table>
+                        </v-card>
+
+                            <v-container>
+                            <v-row no-gutters>
+
+                                <v-col cols="12" sm="2" v-for="(eth, index) in eth_info" :key="index">
+                                    <v-card class="pa-2" outlined tile  >
+                                        <v-icon :color="getColor(eth.eth_status)">mdi-ethernet mdi-24px</v-icon>
+                                        {{eth.eth_name}}
+                                    </v-card>
+                                </v-col>
+                            </v-row>
+                           
                         </v-container>
                     </v-card>
 
 
-                    <v-card v-if="tree">
-                        <v-card-title>
-                            <v-spacer></v-spacer>
-                            <v-text-field
-                                    v-model="search"
-                                    append-icon="mdi-magnify"
-                                    label="Filter (onu,mac,signal,len)"
-                                    single-line
-                                    hide-details
-                            ></v-text-field>
-                        </v-card-title>
-                        <v-data-table
-                                primary
-                                mobile-breakpoint="0"
-                                :headers="headers"
-                                :items="filteredItems"
-                                item-key="id"
-                                sort-by="up/down"
-                                :footer-props="footerProps"
-                                class="elevation-1"
-                        >
-
-                            <template v-slot:body="{ items }">
-
-                                <tbody>
-                                <tr v-for="(item,index) in items" :key="index">
-                                    <td class="text-left">
-                                        <v-btn class="ma-2" 
-                                        :disabled="item.onu_status === '2'"
-                                        @click="showOnuDetail(item.id)">
-                                            <v-icon center :color="getColor(item.onu_status)"
-                                            >mdi-router-wireless mdi-36px</v-icon>
-                                            {{ item.port}}
-                                            <v-icon center>mdi-share</v-icon>
-                                        </v-btn>
-
-                                    </td>
-                                    <td class="text-left">
-                                             <span v-html="getSignal(item.onu_signal)"></span>
-                                    </td>
-                                    <td class="text-left"><span
-                                            v-if="item.onu_lenght !== '0'">{{ item.onu_lenght}} m</span>
-                                    </td>
-                                    <td class="text-left">{{ item.mac}}</td>
-                                    <td>
-
-
-                                        <v-dialog
-                                        transition="dialog-top-transition"
-                                        max-width="600"
-                                >
-                                    <template v-slot:activator="{ on, attrs }">
-                                        <v-btn class="ma-2" color="error" v-bind="attrs" v-on="on" >
-                                            <v-icon>
-                                                mdi-delete-forever
-                                            </v-icon>
-                                        </v-btn>
-                                    </template>
-                                    <template v-slot:default="dialog">
-                                        <v-card>
-                                            <v-toolbar color="error" dark>
-                                                do you really want to delete onu   {{item.port}} {{item.mac}}?
-                                            </v-toolbar>
-                                            <v-card-actions class="justify-end">
-                                                <v-btn text
-                                                       @click="DeleteOnu(item.id) , dialog.value = false"
-                                                >
-                                                    Delete
-                                                </v-btn>
-                                                <v-spacer></v-spacer>
-                                                <v-btn
-                                                        text
-                                                        @click="dialog.value = false"
-                                                >Close
-                                                </v-btn>
-                                            </v-card-actions>
-                                        </v-card>
-                                    </template>
-                                </v-dialog>
-
-                                    </td>
-                                    <td class="text-left"><span
-                                        v-if="item.onu_lenght !== '0'">{{ item.onu_desc}}</span>
-                                </td>
-                                </tr>
-
-                                </tbody>
-
-                            </template>
-
-
-                        </v-data-table>
-                    </v-card>
+                  
 
                     <v-btn fab dark fixed bottom left color="green"
                            @click="BackToHome()">
@@ -258,14 +283,16 @@
                 footerProps: {'items-per-page-options': [50, 300, -1]},
                 headers: [
                     {text: 'up/down', width: "10%", show: true, value: ''},
-                    {text: 'onu_signal', width: "10%", show: true, value: ''},
+                    {text: 'onu_signal', width: "11%", show: true, value: ''},
                     {text: 'onu_lenght', width: "10%", show: true, value: ''},
                     {text: 'onu_mac', width: "10%", show: true, value: ''},
+                    {text: 'user_mac', width: "10%", show: true, value: ''},
                     {text: 'onu_delete', width: "10%", show: true, value: ''},
                     {text: 'onu_desc', width: "25%", show: true, value: ''},
                 ],
                 ex3: {label: 'thumb-color', val: 50, color: 'red'},
                 base_info: [],
+                eth_info: [],
                 port_onu_count: [],
                 all_info: [],
             }
@@ -294,14 +321,18 @@
                 this.loading = true
                 if (this.deviceIp !== '') {
                     let one = 'https://switcher.golden.net.ua/pon/api/olt/base?ip=' + this.deviceIp
-                    let two = 'https://switcher.golden.net.ua/pon/api/olt/onu/count?ip=' + this.deviceIp
+                    let two = 'https://switcher.golden.net.ua/pon/api/olt/eth/name?ip=' + this.deviceIp
+                    let three = 'https://switcher.golden.net.ua/pon/api/olt/onu/count?ip=' + this.deviceIp
                     const requestOne = axios.get(one);
                     const requestTwo = axios.get(two);
-                    await axios.all([requestOne, requestTwo]).then(axios.spread((...responses) => {
+                    const requestThree = axios.get(three);
+                    await axios.all([requestOne, requestTwo,requestThree]).then(axios.spread((...responses) => {
                         const responseOne = responses[0]
                         const responseTwo = responses[1]
+                        const responseThree = responses[2]
                         this.base_info = responseOne.data.data
-                        this.port_onu_count = responseTwo.data.data
+                        this.eth_info = responseTwo.data.data
+                        this.port_onu_count = responseThree.data.data
                     }))
                 }
                 this.loading = false
@@ -349,14 +380,14 @@
                 else return 'gray'
             },
             getSignal(signal) {
-                if (signal !== '' && signal !== isNaN && signal <= '-23') {
+                if (signal !== '' && signal !== isNaN && signal <= '-24') {
                     return '<span style="color:darkgreen;">' + parseInt(signal) / 10 + ' dbm' + '</span>'
                 }
 
-                if (signal !== '' && signal !== isNaN && signal >= '-23' && signal <= '-24') {
+                if (signal !== '' && signal !== isNaN && signal >= '-24' && signal <= '-25') {
                     return '<span style="color:orange;">' + parseInt(signal) / 10 + ' dbm' + '</span>'
                 }
-                if (signal !== '' && signal !== isNaN && signal > '-24') {
+                if (signal !== '' && signal !== isNaN && signal > '-25') {
                     return '<span style="color:red;">' + parseInt(signal) / 10 + ' dbm' + '</span>'
                 }
                 return ''
@@ -399,7 +430,7 @@
         computed: {
             filteredItems() {
                 return this.all_info.filter((i) => {
-                    return !this.search || (i.port + '||' + i.mac + '||' + i.onu_signal + '||' + i.onu_lenght)
+                    return !this.search || (i.port + '||' + i.mac + '||' + i.user_mac + '||' + i.onu_signal + '||' + i.onu_lenght)
                         .toUpperCase().indexOf(this.search.toUpperCase()) !== -1
                 })
             }

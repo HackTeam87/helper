@@ -439,13 +439,13 @@
                 else return 'gray'
             },
             getSignal(signal) {
-                if (signal !== '' && signal <= '-23') {
+                if (signal !== '' && signal <= '-24') {
                     return '<span style="color:darkgreen;">' + parseInt(signal) / 10 + ' dbm' + '</span>'
                 }
-                if (signal !== '' && signal >= '-23' && signal <= '-24') {
+                if (signal !== '' && signal >= '-24' && signal <= '-25') {
                     return '<span style="color:orange;">' + parseInt(signal) / 10 + ' dbm' + '</span>'
                 }
-                if (signal !== '' && signal > '-24') {
+                if (signal !== '' && signal > '-25') {
                     return '<span style="color:red;">' + parseInt(signal) / 10 + ' dbm' + '</span>'
                 }
                 return '<span style="color:gray;">' + parseInt(signal) / 10 + ' dbm' + '</span>'

@@ -100,7 +100,6 @@ def base_info():
     if res.module_name == 'C-DATA: FD1204SN':
         try:
             r = C_DATA_Base_1204S().base_info(ip, community)
-            print(r['r_uptime'])
             olt.uptime = str(r['r_uptime'])
             db.session.commit()
             res_base = [{'desc': res.desc + ' ' + ip}, {'uptime': str(r['r_uptime'])}]
@@ -131,6 +130,33 @@ def base_info():
             return jsonify({'data': res_base})
         except:
             pass
+
+
+# API_OLT
+@ponApp.route("/api/olt/eth/name", methods=['POST', 'GET'])
+def eth_name():
+    ip = request.args.get('ip')
+    res = db.session.query(Olt.ip, Olt.modules_id, Olt.community_ro, OltModules.module_name) \
+        .outerjoin(OltModules, Olt.modules_id == OltModules.id).filter(Olt.ip == ip).first()
+    community = res.community_ro
+    if res.module_name == 'C-DATA: FD1204SN':
+        try:
+            res_count = C_DATA_Base_1204S().eth_status(ip, community)
+            return jsonify({'data': res_count})
+        except:
+            pass
+    if res.module_name == 'C-DATA: FD1208SN':
+        try:
+            res_count = C_DATA_Base_FD1208S().eth_status(ip, community)
+            return jsonify({'data': res_count})
+        except:
+            pass
+    if res.module_name == 'BDCOM: P3310C':
+        try:
+            res_count = BD_COM_Base().eth_status(ip, community)
+            return jsonify({'data': res_count})
+        except:
+            pass        
 
 
 # API_OLT

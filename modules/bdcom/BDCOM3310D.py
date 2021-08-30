@@ -32,6 +32,8 @@ class BD_COM_Base:
             r_cpu = c.split('=')[1].split(' ')[-1].strip()
 
         return {'r_uptime': r_uptime, 'r_temp': r_temp, 'r_cpu': r_cpu}
+    def eth_status(self, ip, community):
+        pass     
 
     def port_onu_count(self, ip, community):
         r_pon_count = []
@@ -104,7 +106,7 @@ class BD_COM_Base:
 
         for sig in OnuSignal:
             r_onu_signal.append({'id': sig.split('=')[0].split('.')[-1].strip(),
-                                 'onu_signal': sig.split('=')[1].split(':')[-1].strip()})
+                                 'onu_signal': sig.split('=')[1].split(':')[-1].strip()})                          
 
         for item in r_onu:
             try:
