@@ -1,6 +1,7 @@
 #! /usr/bin/python3
 import os
 
+
 class C_DATA_Base_1204S:
 
     def base_info(self, ip, community):
@@ -10,8 +11,30 @@ class C_DATA_Base_1204S:
         for u in uptime:
             t = u.split('=')[1].split(' ')
             r_uptime = t[-3] + ' ' + t[-2] + ' ' + t[-1]
+        cpu = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + ' iso.3.6.1.4.1.34592.1.3.100.1.8.1.0')
+        for r_cpu in cpu:
+            r_cpu
+        c = r_cpu.split('=')[1].split(':')[-1].strip()    
 
-        return {'r_uptime': r_uptime}
+        temp = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + ' 1.3.6.1.4.1.34592.1.3.100.1.8.6.0')
+        for r_temp in temp:
+            r_temp    
+        tmp = str(int(r_temp.split('=')[1].split(':')[-1].strip()) /10 )
+
+        total_memory = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + ' 1.3.6.1.4.1.34592.1.3.100.1.8.2.0')
+        for r_mem in total_memory:
+            r_mem   
+        total_mem = str(int(r_mem.split('=')[1].split(':')[-1].strip()))
+
+        free_memory = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + ' 1.3.6.1.4.1.34592.1.3.100.1.8.3.0')
+        for r_fmem in free_memory:
+            r_fmem   
+        free_mem = str(int(r_fmem.split('=')[1].split(':')[-1].strip()))
+        
+       
+        
+        return {'r_uptime': r_uptime, 'r_cpu': c , 'r_temp': tmp , 'total_mem': total_mem, 'free_mem': free_mem}
+
 
     def port_onu_active(self, ip, community):
         
@@ -40,9 +63,11 @@ class C_DATA_Base_1204S:
         for st in port_status:
             r_port_status.append({'port_id' : st.split('=')[0].split('.')[-1].strip(),
             'pon_status' : st.split('=')[1].split(':')[-1].strip()})
-               
+            
 
-       
+         
+            
+        
                              
 
         for item in r_all_onu_active:
@@ -100,7 +125,7 @@ class C_DATA_Base_1204S:
         return r_all_ethernet_name
 
     def port_onu_count(self, ip, community):
-
+      
         r_all_onu_mac = []
         r_onu_user_mac = []
         r_port_name = []
@@ -133,11 +158,12 @@ class C_DATA_Base_1204S:
         for pn in port_name:
             r_port_name.append({'port': pn.split('=')[0].split('.')[-1].strip(),
             'port_name': pn.split('=')[1].split(':')[-1].strip().strip('"')})
+           
                                   
 
-        onu_signal = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + ' 1.3.6.1.4.1.17409.2.3.3.6.1.2')
+        onu_signal = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + ' .1.3.6.1.4.1.17409.2.3.4.2.1.4')
         for aos in onu_signal:
-            r_all_onu_signal.append({'id': aos.split('=')[0].split('.')[-1].strip(),
+            r_all_onu_signal.append({'id': aos.split('=')[0].split('.')[-3].strip(),
                                      'onu_signal': str(int(aos.split('=')[1].split(':')[-1].strip()) / 10)})
 
         onu_status = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + ' .1.3.6.1.4.1.17409.2.3.4.1.1.8')
@@ -207,12 +233,13 @@ class C_DATA_Base_1204S:
                         item['port'] = item6['port_name'] + ':' + str(r_id)
             except:
                 pass  
-                
+               
         return r_all_onu_mac
             
                  
 
     def onu_info(self, ip, community, OnuId):
+        all = []
         #Port_N
         def port_n(OnuId):
             p_name = 'undefined'
@@ -307,13 +334,34 @@ class C_DATA_Base_1204S:
         'snmpwalk -v2c -c ' + community + ' ' + ip + ' 1.3.6.1.4.1.17409.2.3.4.2.1.8.' + OnuId)
         for temp in OnuTemp:
             onu_temp = int(temp.split('=')[1].split(':')[-1].strip('"').strip()) / 100
+
+        all.append({'port': port_n(OnuId), 'status_wan': status_wan, 'signal_rx': str(onu_signal_rx), 'signal_tx': onu_signal_tx,
+                 'distance': onu_distance,'mac_ip': [], 'log': onu_log, 'vendor': onu_vendor,
+                 'model': onu_model,'ver_hard': onu_ver_hard, 'ver_soft': onu_ver_soft, 'desc': onu_desc, 'volt': onu_volt, 'temp': onu_temp })
+
+
+        #UserIp
+        PortIp = []
+    
+        port_ip = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + ' iso.3.6.1.4.1.34592.1.3.100.5.4.1.3')
+        for ip in port_ip:
+            IpVlan = ip.split('=')[0].split('.')
+            PortIp.append({'user_mac': ip.split('=')[1].split(':')[-1].strip().replace(' ', ':'),
+            'ip': IpVlan[-5] +'.'+IpVlan[-4] +'.'+ IpVlan[-3]+'.'+IpVlan[-2]+'('+IpVlan[-1].strip()+')'})          
+
+        try:
+            for mac in onu_user_mac:
+                for ips in PortIp:
+                    if mac['user_mac'] in ips['user_mac']:    
+                        all[0]['mac_ip'].append({'port': mac['user_port'], 'ip': ips['ip'], 'mac': ips['user_mac'],'type': 'd'})         
+           
+            if len(all[0]['mac_ip']) == 0:
+                for mac in onu_user_mac:
+                    all[0]['mac_ip'].append({'port': mac['user_port'], 'mac': mac['user_mac'],'type': 's'})
+        except:
+            pass                        
              
-
-
-        return [{'port': port_n(OnuId), 'status_wan': status_wan, 'signal_rx': str(onu_signal_rx), 'signal_tx': onu_signal_tx,
-                 'distance': onu_distance,'user_mac': onu_user_mac, 'log': onu_log, 'vendor': onu_vendor,
-                 'model': onu_model,'ver_hard': onu_ver_hard, 'ver_soft': onu_ver_soft, 'desc': onu_desc, 
-                 'port_vlan' : onu_user_vlan, 'volt': onu_volt, 'temp': onu_temp}]
+        return all     
 
     def onu_reboot(self, ip, community_rw, OnuId):
         Reboot = os.popen('snmpset -v2c -c ' + community_rw + ' ' + ip + ' .1.3.6.1.4.1.17409.2.3.4.1.1.17.' + OnuId + ' i' + ' 1')

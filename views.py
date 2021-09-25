@@ -13,7 +13,7 @@ from flask_security import login_required
 
 
 # Switch All
-@app.route('/', methods=['POST', 'GET'])
+@app.route('/sw/list', methods=['POST', 'GET'])
 def index():
     group = SwGroup.query.all()
     sw = Sw.query.all()

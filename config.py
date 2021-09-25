@@ -12,3 +12,6 @@ class Configuration(object):
     SECURITY_PASSWORD_SALT = 'salt'
     SECURITY_PASSWORD_HASH = 'sha256_crypt'
     ### Pagination
+
+    ### Jsonify 
+    JSONIFY_PRETTYPRINT_REGULAR = True

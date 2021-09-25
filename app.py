@@ -12,7 +12,7 @@ app.config.from_object(Configuration)
 sslify = SSLify(app)
 db = SQLAlchemy(app)
 csrf = CSRFProtect(app)
-cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+cors = CORS(app, resources={r"/*": {"origins": "*"}})
 from models import *
 
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)

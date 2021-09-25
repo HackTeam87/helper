@@ -3,9 +3,10 @@ import os
 import sys
 
 sys.path.insert(0, './modules')
-from bdcom.BDCOM3310D import BD_COM_Base
 from cdata.FD1204S import C_DATA_Base_1204S
 from cdata.FD1208S import C_DATA_Base_FD1208S
+from cdata.FD1616SN import C_DATA_Base_FD1616SN
+from bdcom.BDCOM3310D import BD_COM_Base
 from app import *
 from flask import Blueprint, render_template, request, url_for, send_from_directory, redirect, flash, jsonify
 from flask import session, send_from_directory
@@ -73,7 +74,7 @@ def pon_add_delete(id):
     return redirect(url_for('ponApp.pon_add'))
 
 # PON
-@ponApp.route("/main/", methods=['POST', 'GET'])
+@ponApp.route("/", methods=['POST', 'GET'])
 def pon():
     olt = Olt.query.order_by(Olt.sort_id.asc()).all()
     return render_template('pon.html', olt=olt)
@@ -102,7 +103,9 @@ def base_info():
             r = C_DATA_Base_1204S().base_info(ip, community)
             olt.uptime = str(r['r_uptime'])
             db.session.commit()
-            res_base = [{'desc': res.desc + ' ' + ip}, {'uptime': str(r['r_uptime'])}]
+            res_base = [{'desc': res.desc + ' ' + ip}, {'uptime': str(r['r_uptime'])}, 
+             {'temp': 'temp ' + r['r_temp'] + ' ℃'}, {'cpu': 'cpu ' + r['r_cpu'] + '%'},
+            {'total_mem': 'total_memory ' + r['total_mem'] + ' M'}, {'free_mem': 'free_memory ' + r['free_mem'] + ' M'}]
             return jsonify({'data': res_base})
         except:
             pass
@@ -112,10 +115,24 @@ def base_info():
             olt.uptime = str(r['r_uptime'])
             db.session.commit()
             res_base = [{'desc': res.desc + ' ' + ip}, {'uptime': str(r['r_uptime'])}, 
-             {'temp': 'temp ' + r['r_temp'] + ' ℃'}, {'cpu': 'cpu ' + r['r_cpu'] + '%'}]
+             {'temp': 'temp ' + r['r_temp'] + ' ℃'}, {'cpu': 'cpu ' + r['r_cpu'] + '%'},
+             {'total_mem': 'total_memory ' + r['total_mem'] + ' M'}, {'free_mem': 'free_memory ' + r['free_mem'] + ' M'}]
             return jsonify({'data': res_base})
         except:
             pass
+
+    if res.module_name == 'C-DATA: FD1616SN':
+        try:
+            r = C_DATA_Base_FD1616SN().base_info(ip, community)
+            olt.uptime = str(r['r_uptime'])
+            db.session.commit()
+            res_base = [{'desc': res.desc + ' ' + ip}, {'uptime': str(r['r_uptime'])}, 
+             {'temp': 'temp ' + r['r_temp'] + ' ℃'}, {'cpu': 'cpu ' + r['r_cpu'] + '%'}]
+            return jsonify({'data': res_base})
+        except:
+            pass    
+
+
     if res.module_name == 'BDCOM: P3310C':
         try:
             r = BD_COM_Base().base_info(ip, community)
@@ -151,6 +168,12 @@ def eth_name():
             return jsonify({'data': res_count})
         except:
             pass
+    if res.module_name == 'C-DATA: FD1616SN':
+        try:
+            res_count = C_DATA_Base_FD1616SN().eth_status(ip, community)
+            return jsonify({'data': res_count})
+        except:
+            pass    
     if res.module_name == 'BDCOM: P3310C':
         try:
             res_count = BD_COM_Base().eth_status(ip, community)
@@ -178,6 +201,12 @@ def onu_count():
             return jsonify({'data': res_count})
         except:
             pass
+    if res.module_name == 'C-DATA: FD1616SN':
+        try:
+            res_count = C_DATA_Base_FD1616SN().port_onu_active(ip, community)
+            return jsonify({'data': res_count})
+        except:
+            pass    
     if res.module_name == 'BDCOM: P3310C':
         try:
             res_count = BD_COM_Base().port_onu_count(ip, community)
@@ -206,6 +235,12 @@ def olt_update():
             return jsonify({'data': res_count})
         except:
             pass
+    if res.module_name == 'C-DATA: FD1616SN':
+        try:
+            res_count = C_DATA_Base_FD1616SN().port_onu_count(ip, community)
+            return jsonify({'data': res_count})
+        except:
+            pass    
     if res.module_name == 'BDCOM: P3310C':
         try:
             res_all = BD_COM_Base().port_info(ip, community)
@@ -235,6 +270,14 @@ def onu_info():
             return jsonify({'data': res_onu})
         except:
             pass
+
+    if res.module_name == 'C-DATA: FD1616SN':
+        try:
+            res_onu = C_DATA_Base_FD1616SN().onu_info(ip, community,  OnuId)
+            return jsonify({'data': res_onu})
+        except:
+            pass
+
     if res.module_name == 'BDCOM: P3310C':
         try:
             res_onu = BD_COM_Base().onu_info(ip, community, OnuId)
@@ -264,6 +307,14 @@ def onu_reboot():
             return jsonify({'data': res_onu})
         except:
             pass
+
+    if res.module_name == 'C-DATA: FD1616SN':
+        try:
+            res_onu = C_DATA_Base_FD1616SN().onu_reboot(ip, community_rw,  OnuId)
+            return jsonify({'data': res_onu})
+        except:
+            pass
+
     if res.module_name == 'BDCOM: P3310C':
         try:
             res_onu = BD_COM_Base().onu_reboot(ip, community_rw, OnuId)
@@ -293,6 +344,12 @@ def onu_delete():
             return jsonify({'data': res_onu})
         except:
             pass
+    if res.module_name == 'C-DATA: FD1616SN':
+        try:
+            res_onu = C_DATA_Base_FD1616SN().onu_delete(ip, community_rw,  OnuId)
+            return jsonify({'data': res_onu})
+        except:
+            pass    
     if res.module_name == 'BDCOM: P3310C':
         try:
             res_onu = BD_COM_Base().onu_delete(ip, community_rw, OnuId)
