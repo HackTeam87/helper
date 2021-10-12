@@ -60,11 +60,15 @@ class Sw(db.Model):
     created = db.Column(db.DateTime, default=datetime.now())
     up = db.Column(db.DateTime)
     down = db.Column(db.DateTime)
-    group_id = db.Column(db.Integer, db.ForeignKey('sw_group.id', ondelete='CASCADE'))
-    modules_id = db.Column(db.Integer, db.ForeignKey('sw_modules.id'))
     img = db.Column(db.String(250))
     sort_id = db.Column(db.Integer)
     uptime = db.Column(db.String(200))
+    api_login = db.Column(db.String(150))
+    api_password = db.Column(db.String(150))
+    api_port = db.Column(db.String(150))
+    group_id = db.Column(db.Integer, db.ForeignKey('sw_group.id', ondelete='CASCADE'))
+    modules_id = db.Column(db.Integer, db.ForeignKey('sw_modules.id'))
+    
 
     def __repr__(self):
         return '<Sw id: {}, ip: {}>'.format(self.id, self.ip)

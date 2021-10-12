@@ -94,7 +94,7 @@ class BD_COM_Base:
         # Собираем маки ону
         for m in OnuMac:
             r_onu_mac.append({'id': m.split('=')[0].split('.')[-1].strip(),
-                              'mac': m.split('=')[1].split(':')[-1].strip().replace(' ', ':')})
+                              'onu_mac_serial': m.split('=')[1].split(':')[-1].strip().replace(' ', ':')})
         # Собираем длину волокна ону
         for l in OnuLenght:
             r_onu_lenght.append({'id': l.split('=')[0].split('.')[-1].strip(),
@@ -120,7 +120,7 @@ class BD_COM_Base:
             try:
                 for item3 in r_onu_mac:
                     if item['id'] in item3['id']:
-                        item['mac'] = item3['mac'].strip()
+                        item['onu_mac_serial'] = item3['onu_mac_serial'].strip()
             except:
                 pass
 

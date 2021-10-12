@@ -4,6 +4,7 @@ import sys
 sys.path.insert(0, './modules/mikrotik')
 from Mikrotik import MikrotikBase
 from Mikrotik import MikrotikDetail
+from MikrotikApi import MikApi
 from app import *
 from flask import Blueprint, render_template, request, url_for, send_from_directory, redirect, flash, jsonify
 from flask import session
@@ -20,9 +21,10 @@ mikrotikApp = Blueprint('mikrotikApp', __name__, static_folder='static', templat
 # Mikrotik_INFO
 @mikrotikApp.route("/", methods=['POST', 'GET'])
 def mikrotik_list():
-    group = SwGroup.query.all()
+    # group = SwGroup.query.all()
     # sw = Sw.query.filter(Sw.model == 'Mikrotik'+'*').all()
     sw = Sw.query.filter(Sw.model.like('Mikrotik%')).order_by(Sw.sort_id.asc()).all()
+    group = SwGroup.query.filter(SwGroup.name.like('Mikrotik%')).all()
     # olt = Olt.query.order_by(Olt.sort_id.asc()).all()
     return render_template('mikrotik.html', group=group, sw=sw)
 
@@ -56,8 +58,26 @@ def api_mikrotik_vlan():
     if res.module_name == 'Mikrotik':
         try:
             mb = MikrotikDetail().mik_vlan(ip, community)
-            print(mb)
             return jsonify({'data': mb})
         except:
             pass        
     
+
+# API Api
+@mikrotikApp.route("/api/mikrotik/api", methods=['POST', 'GET'])
+def api_mikrotik_api():
+    ip = str(request.args.get('ip'))
+    command = str(request.args.get('command'))
+    res = db.session.query(Sw.ip, Sw.modules_id, Sw.community_ro,Sw.api_login, 
+    Sw.api_password, Sw.api_port, SwModules.module_name) \
+        .outerjoin(SwModules, Sw.modules_id == SwModules.id).filter(Sw.ip == ip).first()
+    login = res.api_login
+    password = res.api_password
+    port = res.api_port
+    
+    if res.module_name == 'Mikrotik':
+        try:
+            ma = MikApi().getCommand(ip, login, password, port, command)
+            return jsonify({'data': ma})
+        except:
+            pass         

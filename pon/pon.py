@@ -127,7 +127,8 @@ def base_info():
             olt.uptime = str(r['r_uptime'])
             db.session.commit()
             res_base = [{'desc': res.desc + ' ' + ip}, {'uptime': str(r['r_uptime'])}, 
-             {'temp': 'temp ' + r['r_temp'] + ' ℃'}, {'cpu': 'cpu ' + r['r_cpu'] + '%'}]
+             {'temp': 'temp ' + r['r_temp'] + ' ℃'}, {'cpu': 'cpu ' + r['r_cpu'] + '%'},
+             {'total_mem': 'total_memory ' + r['total_mem'] + ' M'}, {'free_mem': 'free_memory ' + r['free_mem'] + ' M'}]
             return jsonify({'data': res_base})
         except:
             pass    
