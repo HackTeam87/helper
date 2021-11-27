@@ -10,6 +10,7 @@ from flask import Blueprint, render_template, request, url_for, send_from_direct
 from flask import session
 from models import Role, User, SwGroup, Sw, SwModules
 # from keystoneclient.session import Session
+from flask_security import login_required
 
 
 # from sqlalchemy import asc, desc
@@ -20,6 +21,7 @@ mikrotikApp = Blueprint('mikrotikApp', __name__, static_folder='static', templat
 
 # Mikrotik_INFO
 @mikrotikApp.route("/", methods=['POST', 'GET'])
+@login_required
 def mikrotik_list():
     # group = SwGroup.query.all()
     # sw = Sw.query.filter(Sw.model == 'Mikrotik'+'*').all()

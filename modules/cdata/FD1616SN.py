@@ -41,6 +41,8 @@ class C_DATA_Base_FD1616SN:
     def port_onu_active(self, ip, community):
 
         r_all_onu_active = []
+        r_port_tx_power = []
+        r_port_volt = []
         r_port_holding = []
         r_port_name = []
         r_port_status = []
@@ -48,7 +50,19 @@ class C_DATA_Base_FD1616SN:
         all_onu_active = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + ' 1.3.6.1.4.1.17409.2.3.3.1.1.8')
         for ana in all_onu_active:
             r_all_onu_active.append({'port_id': ana.split('=')[0].split('.')[-1].strip(),
-                                     'onu_count': ana.split('=')[1].split(':')[-1].strip(), 'port_name': '', 'port_holding': ''})
+                                     'onu_count': ana.split('=')[1].split(':')[-1].strip(), 
+                                     'port_name': '', 'port_holding': '',
+                                     'port_tx_power': '', 'port_volt': ''})
+
+        port_tx_power = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + ' 1.3.6.1.4.1.17409.2.3.3.5.1.6')
+        for tx in port_tx_power:
+            r_port_tx_power.append({'port_id': tx.split('=')[0].split('.')[-1].strip(),
+                                    'port_tx_power': str(int(tx.split('=')[1].split(':')[-1].strip()) / 100)}) 
+
+        port_volt = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + ' 1.3.6.1.4.1.17409.2.3.3.5.1.4')
+        for volt in port_volt:
+            r_port_volt.append({'port_id': volt.split('=')[0].split('.')[-1].strip(),
+                                'port_volt': str(int(volt.split('=')[1].split(':')[-1].strip()) / 100000)})                             
 
         port_holding = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + ' 1.3.6.1.4.1.17409.2.3.3.1.1.7')
         for ph in port_holding:
@@ -67,6 +81,21 @@ class C_DATA_Base_FD1616SN:
                           
 
         for item in r_all_onu_active:
+
+            try:
+                for item0 in r_port_volt:
+                    if item['port_id'] == item0['port_id']:
+                        item['port_volt'] = item0['port_volt']
+            except:
+                pass
+            
+            try:
+                for item1 in r_port_tx_power:
+                    if item['port_id'] == item1['port_id']:
+                        item['port_tx_power'] = item1['port_tx_power']
+            except:
+                pass
+            
             try:
                 for item2 in r_port_holding:
                     if item['port_id'] == item2['port_id']:

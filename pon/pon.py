@@ -14,6 +14,7 @@ from flask import session, send_from_directory
 from models import OltModules, Olt, OnuStatus
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import  FileStorage
+from flask_security import login_required
 
 # from sqlalchemy import asc, desc
 # from flask_security import login_required
@@ -75,6 +76,7 @@ def pon_add_delete(id):
 
 # PON
 @ponApp.route("/", methods=['POST', 'GET'])
+@login_required
 def pon():
     olt = Olt.query.order_by(Olt.sort_id.asc()).all()
     return render_template('pon.html', olt=olt)

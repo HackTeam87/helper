@@ -58,6 +58,9 @@
                         </v-container>
                     </v-card>
                     <v-card-title>
+                        <div class="text-center">
+                            <v-overlay v-if="alert.value">
+                                
                         <v-alert
                                 dark
                                 v-model="alert.value"
@@ -66,11 +69,14 @@
                                 colored-border
                                 icon="mdi-twitter"
                                 transition="slide-x-transition"
-                                style="width: 74%;position: absolute;z-index: 999;text-align: center;"
+                                style="text-align: center;"
                                 :color="alert.color"
                         >
                             {{alert.message}}
                         </v-alert>
+                       
+                    </v-overlay>
+                    </div>
                         <v-spacer></v-spacer>
                         <v-text-field
                                 v-model="searchItem"

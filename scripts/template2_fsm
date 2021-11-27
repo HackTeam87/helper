@@ -1,0 +1,4 @@
+Value Result (0/0.*)
+
+Start
+  ^ +${Result} -> Record
