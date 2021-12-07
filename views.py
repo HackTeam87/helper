@@ -16,8 +16,15 @@ from flask_security import login_required
 @app.route('/sw/list', methods=['POST', 'GET'])
 def index():
     group = SwGroup.query.all()
-    sw = Sw.query.all()
+    sw = Sw.query.order_by(Sw.ip).all()
     return render_template('index.html', group=group, sw=sw)
+
+
+# Switch All
+@app.route('/sw/maps', methods=['POST', 'GET'])
+def maps():
+    
+    return render_template('/maps/index.html')    
 
 
 #Route

@@ -4,8 +4,10 @@ import sys
 
 sys.path.insert(0, './modules/dlink')
 sys.path.insert(0, './modules/huawei')
+sys.path.insert(0, './modules/edge-core')
 from dlink_base import DlinkBase
 from S2326TP_EI import HuaweiBase
+from ECS4120_28F import EdgeCoreBase
 from datetime import datetime
 from app import app
 from sqlalchemy.sql import select
@@ -101,6 +103,13 @@ def api_sw_mac():
         except:
             pass
 
+    if res.module_name == 'edge-core':
+        try:
+            model = EdgeCoreBase().sw_model(ip, community)
+            return jsonify({'data': model})
+        except:
+            pass    
+
 
 
 @swApp.route('/api/sw/base', methods=['GET'])
@@ -121,6 +130,13 @@ def api_sw_base():
             return jsonify({'data': s})
         except:
             pass
+    if res.module_name == 'edge-core':
+        try:
+            s = EdgeCoreBase().sw_base(ip, community)
+            return jsonify({'data': s})
+        except:
+            pass
+    
 
 
 @swApp.route('/api/sw/port/len', methods=['GET'])
@@ -143,4 +159,10 @@ def api_sw_port_len():
             return jsonify({'data': s})
         except:
             pass
+    if res.module_name == 'edge-core':
+        try:
+            s = EdgeCoreBase().cab_init(ip,  community_ro, community_rw, port)
+            return jsonify({'data': s})
+        except:
+            pass    
     

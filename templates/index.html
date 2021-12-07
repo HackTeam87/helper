@@ -72,17 +72,28 @@
                                     <td>
                                              <a href="https://switcher.golden.net.ua/sw/sw?ip={{s.ip}}"
                                            {% if s.status== 1 %} class="colors-white"
-                                           {% elif s.status== 0 %} class="colors-red"
+                                           {% elif s.status== 0 %} class="colors-red-disabled"
                                            {% else %} class="colors-yellow" {% endif %}
                                         >
                                             <i class="expandable-table-caret fa fa-random fa-1x fa-fw"></i>
                                             <span>{{s.ip}}</span>
+                                            <br>
                                             <span>
                                     {% if s.description != None %}
                                    {{s.description}}
                                    {% endif %}
                                              </span>
-                                            <span> обновление: {{s.up}}</span>
+                                             <br>
+                                             {% if s.status== 1 %}
+                                             <span class="colors-white" style="font-size: smaller;">
+                                             up: {{s.up}}
+                                             </span>
+                                             {% endif%}
+                                             {% if s.status== 0 %}
+                                             <span class="colors-red" style="font-size: smaller;">
+                                             down: {{s.up}}
+                                             </span>
+                                             {% endif%}
                                         </a>
                                     </td>
 

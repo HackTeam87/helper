@@ -8,6 +8,7 @@ from datetime import datetime
 
 def time_update():
     t = datetime.now()
+    t.strftime("%m/%d/%Y, %H:%M")
     return t
 
 

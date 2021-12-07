@@ -39,19 +39,21 @@ class C_DATA_Base_FD1616SN:
         return {'r_uptime': r_uptime, 'r_cpu': c , 'r_temp': tmp , 'total_mem': total_mem, 'free_mem': free_mem}
 
     def port_onu_active(self, ip, community):
-
+        
         r_all_onu_active = []
         r_port_tx_power = []
         r_port_volt = []
         r_port_holding = []
         r_port_name = []
         r_port_status = []
-
+        r_port_oper_status = []
+        
         all_onu_active = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + ' 1.3.6.1.4.1.17409.2.3.3.1.1.8')
         for ana in all_onu_active:
             r_all_onu_active.append({'port_id': ana.split('=')[0].split('.')[-1].strip(),
                                      'onu_count': ana.split('=')[1].split(':')[-1].strip(), 
-                                     'port_name': '', 'port_holding': '',
+                                     'port_holding': '', 'pon_status' : '', 
+                                     'pon_oper_status': '',
                                      'port_tx_power': '', 'port_volt': ''})
 
         port_tx_power = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + ' 1.3.6.1.4.1.17409.2.3.3.5.1.6')
@@ -62,7 +64,7 @@ class C_DATA_Base_FD1616SN:
         port_volt = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + ' 1.3.6.1.4.1.17409.2.3.3.5.1.4')
         for volt in port_volt:
             r_port_volt.append({'port_id': volt.split('=')[0].split('.')[-1].strip(),
-                                'port_volt': str(int(volt.split('=')[1].split(':')[-1].strip()) / 100000)})                             
+                                'port_volt': str(int(volt.split('=')[1].split(':')[-1].strip()) / 100000)})                                                       
 
         port_holding = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + ' 1.3.6.1.4.1.17409.2.3.3.1.1.7')
         for ph in port_holding:
@@ -72,13 +74,20 @@ class C_DATA_Base_FD1616SN:
         port_name = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + ' 1.3.6.1.4.1.17409.2.3.3.1.1.21')
         for pn in port_name:
             r_port_name.append({'port_id': pn.split('=')[0].split('.')[-1].strip(),
-            'port_name': pn.split('=')[1].split(':')[-1].strip().strip('"')})
+            'port_name': pn.split('=')[1].split(':')[-1].strip().strip('"')}) 
 
         port_status = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + ' 1.3.6.1.4.1.17409.2.3.3.1.1.5')
         for st in port_status:
             r_port_status.append({'port_id' : st.split('=')[0].split('.')[-1].strip(),
-            'pon_status' : st.split('=')[1].split(':')[-1].strip()})    
-                          
+            'pon_status' : st.split('=')[1].split(':')[-1].strip()})
+            port_oper_status = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + ' iso.3.6.1.2.1.2.2.1.5.' + 
+            str(st.split('=')[0].split('.')[-1].strip()))
+            for pon_oper in port_oper_status:
+                r_port_oper_status.append({'port_id': st.split('=')[0].split('.')[-1].strip(),  
+                'pon_oper_status':pon_oper.split(':')[-1].strip()})
+                
+            
+                             
 
         for item in r_all_onu_active:
 
@@ -95,7 +104,7 @@ class C_DATA_Base_FD1616SN:
                         item['port_tx_power'] = item1['port_tx_power']
             except:
                 pass
-            
+
             try:
                 for item2 in r_port_holding:
                     if item['port_id'] == item2['port_id']:
@@ -108,6 +117,12 @@ class C_DATA_Base_FD1616SN:
                     if str(item['port_id']) == item3['port_id']:
                         item['pon_status'] = item3['pon_status']   
             except:
+                pass 
+            try:
+                for item5 in  r_port_oper_status:
+                    if str(item['port_id']) == item5['port_id']:
+                        item['pon_oper_status'] = item5['pon_oper_status']   
+            except:
                 pass     
 
             try:
@@ -116,19 +131,19 @@ class C_DATA_Base_FD1616SN:
                         item['port_id'] = item4['port_name']   
             except:
                 pass 
-
-             
-        return r_all_onu_active     
+            
+        return r_all_onu_active       
 
     def eth_status(self, ip, community):
 
         r_all_ethernet_name = []
         r_all_ethernet_status = []
+        r_all_oper_status = []
 
         ethernet_name = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + ' 1.3.6.1.4.1.17409.2.3.2.1.1.4')
         for eth_name in ethernet_name:
             r_all_ethernet_name.append({'eth_id': eth_name.split('=')[0].split('.')[-1].strip(),
-            'eth_name': eth_name.split('=')[1].split(':')[-1].strip(), 'eth_status' : ''})
+            'eth_name': eth_name.split('=')[1].split(':')[-1].strip(), 'eth_status' : '', 'eth_oper_status': ''})
                 
 
 
@@ -136,6 +151,13 @@ class C_DATA_Base_FD1616SN:
         for eth in ethernet_status:
             r_all_ethernet_status.append({'eth_id': eth.split('=')[0].split('.')[-1].strip(),
             'eth_status': eth.split('=')[1].split(':')[-1].strip()})
+            oper_status = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + ' iso.3.6.1.2.1.2.2.1.5.' + 
+            str(eth.split('=')[0].split('.')[-1].strip()))
+            for eth_oper in oper_status:
+                r_all_oper_status.append({'eth_id': eth.split('=')[0].split('.')[-1].strip(),  
+                'eth_oper_status':eth_oper.split(':')[-1].strip()})        
+
+          
 
 
         for item in r_all_ethernet_name:
@@ -145,7 +167,14 @@ class C_DATA_Base_FD1616SN:
                         item['eth_status'] = item2['eth_status']
             except:
                 pass 
-        return r_all_ethernet_name   
+            try:
+                for item3 in r_all_oper_status:
+                    if item['eth_id'] == item3['eth_id']:
+                        item['eth_oper_status'] = item3['eth_oper_status']
+            except:
+                pass  
+              
+        return r_all_ethernet_name
 
 
     def port_onu_count(self, ip, community):
@@ -301,7 +330,7 @@ class C_DATA_Base_FD1616SN:
 
         #Status_Wan
         status_wan = []
-        onuStatusWan = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + '  .1.3.6.1.4.1.17409.2.8.4.1.1.7.' + OnuId)
+        onuStatusWan = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + '  .1.3.6.1.4.1.17409.2.8.5.1.1.5.' + OnuId)
         for sts in onuStatusWan:
             status_wan.append(sts.split('=')[1].split(':')[-1].strip('"').strip())
 

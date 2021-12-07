@@ -41,9 +41,16 @@
                 </div>
 
                 <v-flex sm12 style="overflow: auto">
-
-
-                    <v-card>
+                    
+                    <v-list-group :value="false" >
+                        <template v-slot:activator >
+                            <v-list-item-title > 
+                                      <v-icon center >mdi-server-network mdi-24px </v-icon> 
+                                      <span v-for="b in base_info" :key="b.model">{{b.sw_d}} {{b.sw_u}}</span>
+                                </v-list-item-title>
+                            </template>
+                                
+                    <v-card >
                         <v-container class="grey lighten-5">
                             <v-row no-gutters>
                                 <v-col cols="12" sm="3" v-for="b in base_info" :key="b.model">
@@ -56,6 +63,8 @@
                                 </v-col>
                             </v-row>
                         </v-container>
+                    </v-list-group>
+
                     </v-card>
                     <v-card-title>
                         <div class="text-center">
@@ -81,7 +90,7 @@
                         <v-text-field
                                 v-model="searchItem"
                                 append-icon="mdi-magnify"
-                                label="Filter (mac,vlan,port)"
+                                label="mac-address,vlan,port"
                                 single-line
                                 hide-details
                         ></v-text-field>
@@ -108,54 +117,78 @@
 
                                     <v-tooltip center>
                                         <template v-slot:activator="{ on, attrs }">
-                                            <v-btn class="ma-2"
+
+                                            <v-span class="text-left text-caption"
                                                    v-bind="attrs"
                                                    v-on="on">
-                                                <v-icon center
-                                                        :color="getColor(item.status)">mdi-ethernet mdi-36px
+                                                   <span v-if="item.status === '1'">UP</span>
+                                                   <span v-else>DOWN</span>
+                                                <v-icon center :color="getColor(item.status)">
+                                                    mdi-ethernet mdi-36px
                                                 </v-icon>
                                                 {{ item.port }}
+                                            </v-span>
+                                           
+                                            
+                                            <br>
+
+                                            <v-btn class="text-left text-caption"
+                                            v-bind="attrs"
+                                            v-on="on" v-if="item.status === '1'">
+                                            <v-icon>mdi-reload</v-icon>
+                                            <a href="javascript:void(0);" @click="diagPort(item.port)"
+                                            title="Click for reload info" style="text-decoration: none;">
+                                             <span>cable</span>
+                                             </a>
                                             </v-btn>
+
+                                            <br>
+                                            <v-span class="text-left text-caption"
+                                            v-bind="attrs"
+                                            v-on="on" v-if="item.status === '1'">
+                                            <v-icon v-if="item.status === '1'">mdi-lan-connect</v-icon>
+                                            <span v-if="item.status === '1' && item.tag" v-html="'('+ item.tag+')'" ></span>
+                                            <span v-if="item.status === '1'" v-html="operStatus(item.speed)"></span>
+                                            </v-span>
+                                            <br>
+
+                                            
                                         </template>
                                         <span v-html="operStatus(item.speed)"></span>
                                     </v-tooltip>
 
                                 </td>
 
-                                <td class="text-left">
-                                    <span v-if="item.status === '1' && item.tag" v-html="'('+ item.tag+')'" ></span>
-                                    <span v-if="item.status === '1'" v-html="operStatus(item.speed)"></span>
-                                </td>
-                                <td class="text-left">
+                                <td class="text-left text-caption">
+                                    <v-icon>mdi-content-paste</v-icon>
+                                    <span>{{item.desc}}</span>
+                                    <br>
+
+                                    <v-icon>mdi-arrow-expand</v-icon>in/out: 
+                                    <span v-html="getCounters(item)"
+                                    v-bind:style="{ color: colorBySizes(item.in_c, item.out_c),
+                                    'font-weight': boldBySizes(item.in_c, item.out) }"></span>
+                                    <br>
+                                    <v-icon>mdi-numeric</v-icon>
+                                    errors(rx/tx):
+                                    <span v-html="colorErrors(item.rx_errors, item.tx_errors)"></span>
+                                    <br>
+
+
+                                    <v-icon>mdi-alphabetical</v-icon>
+                                    mac-address/vid: 
+                                    <br>
                                     <div style='overflow-y: auto; max-height: 80px;'>
                                         <span v-for="(m, index) in item.mac_address" :key="index">{{ m }}<br></span>
                                     </div>
                                 </td>
-                                <td class="text-left">
+                               
+                                <!-- <td class="text-left">
                                     <div style='overflow-y: auto; max-height: 100px;'>
                                         <span v-for="(v, index) in item.vlan" :key="index">{{ v }}<br></span>
                                     </div>
-                                </td>
-                                <td class="text-left">
-                                    <span v-html="getCounters(item)"
-                                          v-bind:style="{ color: colorBySizes(item.in_c, item.out_c),
-                                          'font-weight': boldBySizes(item.in_c, item.out) }"></span>
-                                </td>
-                                <td class="text-left">
-                                     <span v-html="colorErrors(item.rx_errors, item.tx_errors)">
-                                     </span>
-                                </td>
-                                <td class="text-left">
-
-                                    <div>
-                                        <a href="javascript:void(0);" @click="diagPort(item.port)"
-                                           title="Click for reload info" style="text-decoration: none;">
-
-                                            <span>Опросить</span>
-                                        </a>
-                                    </div>
-                                </td>
-                                <td class="text-left">{{ item.desc}}</td>
+                                </td> -->
+                               
                             </tr>
                             </tbody>
 
@@ -163,13 +196,13 @@
 
 
                     </v-data-table>
-                    <v-btn v-scroll="onScroll" v-show="fab" fab dark fixed bottom left color="green"
+                    <v-btn v-scroll="onScroll" v-show="fab" fab dark fixed bottom left color="rgba(50, 205, 50, 0.7)"
                            @click="BackToHome()">
                         <v-icon>mdi-arrow-collapse-left</v-icon>
                     </v-btn>
 
                     <v-btn v-scroll="onScroll" v-show="fab" fab
-                           dark fixed bottom right color="green"
+                           dark fixed bottom right color="rgba(50, 205, 50, 0.7)"
                            @click="toTop">
                         <v-icon>mdi-arrow-up</v-icon>
                     </v-btn>
@@ -216,14 +249,8 @@
                 searchItem: '',
                 footerProps: {'items-per-page-options': [28, 48, -1]},
                 headers: [
-                    {text: 'port', width: "4%", show: true, value: ''},
-                    {text: 'link', width: "12%", show: true, value: ''},
-                    {text: 'mac_address', width: "17%", show: true, value: ''},
-                    {text: 'vlan_id', width: "15%", show: true, value: ''},
-                    {text: 'In/Out', width: "15%", show: true, value: ''},
-                    {text: 'Rx_errors/Tx_errors', width: "15%", show: true, value: ''},
-                    {text: 'cable', width: "20%", show: true, value: ''},
-                    {text: 'desc', width: "3%", show: true, value: ''},
+                    {text: 'status', width: "40%", show: true, value: ''},
+                    {text: 'info', width: "60%", show: true, value: ''},
                 ],
                 base_list: [],
                 base_info: [],
@@ -298,7 +325,9 @@
                 if (d === '10000000') return '<span style="color: darkgreen">10-Full</span>';
                 if (d === '100000000') return '<span style="color: darkgreen">100-Full</span>';
                 if (d === '1000000000') return '<span style="color: darkgreen">1G-Full</span>';
+                if (d === '7') return '<span style="color: darkgreen">1G-Full</span>';
                 if (d === '4294967295') return '<span style="color: darkgreen">10G-Full</span>';
+                if (d === '9') return '<span style="color: darkgreen">10G-Full</span>';
                 if (d === '0') return '<span style="color: darkgray; font-weight: bold">Down</span>';
 
                 return d;

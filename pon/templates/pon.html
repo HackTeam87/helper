@@ -5,7 +5,12 @@
 <div class="col-12 col-sm-3 col-md-3" style="margin-top:30px;">
     <span>{{o.desc}}</span>
 
-    <a href="https://assistant.golden.net.ua/?ip={{o.ip}}">
+    <a href="https://assistant.golden.net.ua/?ip={{o.ip}}"
+    {% if o.status== 1 %} class="colors-white"
+    {% elif o.status== 0 %} class="colors-red-disabled"
+    {% else %} class="colors-yellow" {% endif %}
+    
+    >
         <div class="info-box">
 
             <div class="info-box-content">
@@ -17,17 +22,19 @@
     </a>
      {% if o.status== 1 %}
     <span class="elevation-1  colors-white">
-           <i class="fas fa-cog"></i>update: {{o.up}}
-         </span>
+           <i class="fas fa-cog"></i>up: {{o.up}}
+    </span>
+    <br>
+    <span class="elevation-1"><i class="fas fa-cog"></i>uptime: {{o.uptime}}</span>
     {% endif%}
     {% if o.status== 0 %}
     <span class="elevation-1  colors-red">
            <i class="fas fa-cog"></i>down: {{o.up}}
-         </span>
-    {% endif%}
+    </span>
     <br>
-
-    <span class="elevation-1"><i class="fas fa-cog"></i>uptime: {{o.uptime}}</span>
+    <span class="elevation-1"><i class="fas fa-cog"></i>last uptime: {{o.uptime}}</span>
+    {% endif%}
+    
 
 
 

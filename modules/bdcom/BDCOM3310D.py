@@ -6,6 +6,8 @@ import re
 
 class BD_COM_Base:
 
+    
+
     def base_info(self, ip, community):
         # Uptime
         uptime = os.popen('snmpwalk -v2c -c ' + community + ' ' + ip + ' 1.3.6.1.2.1.1.3.0')
@@ -32,10 +34,23 @@ class BD_COM_Base:
             r_cpu = c.split('=')[1].split(' ')[-1].strip()
 
         return {'r_uptime': r_uptime, 'r_temp': r_temp, 'r_cpu': r_cpu}
+        
     def eth_status(self, ip, community):
         pass     
 
     def port_onu_count(self, ip, community):
+
+        def port_id(port_id):
+            if port_id == '15':
+                port_id = '1'
+            if port_id == '16':
+                port_id = '2'
+            if port_id == '17':
+                port_id = '3'
+            if port_id == '18':
+               port_id = '4'            
+            return port_id
+
         r_pon_count = []
         r_port_holding = []
         # PonPortCount
@@ -53,7 +68,8 @@ class BD_COM_Base:
             try:
                 for item2 in r_port_holding:
                     if item['port_id'] == item2['port_id']:
-                        item['port_id'] = item['port_id'].replace(item['port_id'], 'EPON0/' + item['port_id'])
+                        print(item['port_id'])
+                        item['port_id'] = item['port_id'].replace(item['port_id'], 'EPON0/' + port_id(item['port_id']))
                         item['port_holding'] = item2['port_holding']
             except:
                 pass

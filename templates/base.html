@@ -27,9 +27,15 @@
             color: black;
             /*background-color: #1aaf0e;*/
         }
-
         .colors-red {
             color: rgb(238, 20, 20);
+        }
+
+        .colors-red-disabled {
+            color: rgb(238, 20, 20);
+            pointer-events: none;
+            cursor: default;
+            opacity: 0.6;
             /*background-color: coral;*/
         }
 
@@ -114,6 +120,12 @@
                                     <p>VLAN</p>
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a href="/sw/maps" class="nav-link active">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Maps</p>
+                                </a>
+                            </li>
 
                         </ul>
                     </li>
@@ -131,7 +143,7 @@
                             <li class="nav-item">
                                 <a href="/sw/list" class="nav-link active">
                                     <i class="far fa-circle nav-icon"></i>
-                                    <p>Ping</p>
+                                    <p>SW Ping</p>
                                 </a>
                             </li>
 
@@ -158,7 +170,7 @@
                             <li class="nav-item">
                                 <a href="/" class="nav-link active">
                                     <i class="far fa-circle nav-icon"></i>
-                                    <p>Dashboard</p>
+                                    <p>OLT Dashboard</p>
                                 </a>
                             </li>
                         </ul>
@@ -169,7 +181,7 @@
                         <a href="#" class="nav-link active">
                             <i class="nav-icon fas fa-upload"></i>
                             <p>
-                               Routers
+                               RouterOS
                             </p>
                         </a>
                         <ul class="nav nav-treeview">
